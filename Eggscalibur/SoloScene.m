@@ -11,8 +11,14 @@
 @implementation SoloScene
 {
     float tileWidth;
+    int mapWidth;
     KKNode* mapRoot;
     NSMutableArray* mapTiles;
+    
+    // camera movement
+    KKNode* cameraRoot;
+    CGPoint touchOrigin;
+    CGPoint touchDestination;
     
     // rally point management
     KKNode* selectedUnit;
@@ -20,6 +26,7 @@
     KKNode* touchIndicatorRoot;
    
     bool canSetRallyPoints;
+    bool willSetRallyPoints;
     
     // player energy
     KKNode* playerHUDRoot;
@@ -54,7 +61,7 @@
 	if (self)
 	{
 		/* Setup your scene here */
-		self.backgroundColor = [SKColor colorWithRed:0.4 green:0.0 blue:0.4 alpha:1.0];
+		self.backgroundColor = [SKColor blackColor];
         
         self.physicsWorld.gravity = CGVectorMake(0.0, 0.0);
         self.physicsWorld.contactDelegate = self;
@@ -64,6 +71,7 @@
         
         [self renderMap];
 		[self setupPlayerHUD];
+        [self setupCamera];
         //[self setupGestureRecognizers];
 	}
 	return self;
@@ -94,9 +102,15 @@
 
 -(void) renderMap
 {
-    mapRoot = [KKNode node];
-    [self addChild:mapRoot];
+    mapWidth = 10;
     
+    mapRoot = [KKNode node];
+    KKSpriteNode* mapBackground = [KKSpriteNode spriteNodeWithColor:[UIColor grayColor] size:CGSizeMake(mapWidth*tileWidth, mapWidth*tileWidth)];
+    mapBackground.position = CGPointMake(mapWidth*tileWidth/2, mapWidth*tileWidth/2);
+    
+    [mapRoot addChild:mapBackground];
+    [self addChild:mapRoot];
+
     mapTiles = [[NSMutableArray alloc] init];
     
     //create 10x10 grid
@@ -106,15 +120,23 @@
              [self addMapTileAtX:x andY:y];
         }
     }
-    
+    /*
     touchIndicatorRoot = [KKNode node];
     KKSpriteNode* touchIndicator = [KKSpriteNode spriteNodeWithColor:[UIColor redColor] size:CGSizeMake(tileWidth, tileWidth)];
     [touchIndicatorRoot addChild:touchIndicator];
     touchIndicatorRoot.hidden = YES;
     [mapRoot addChild:touchIndicatorRoot];
-    
+    */
     [self setupUnits];
     [self setupBatteries];
+}
+
+-(void) setupCamera
+{
+    touchOrigin = CGPointZero;
+    cameraRoot = [KKNode node];
+    cameraRoot.position = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
+    [mapRoot addChild:cameraRoot];
 }
 
 -(void) setupUnits
@@ -123,6 +145,7 @@
     
     indicatorBarWidth = 30.0;
     maxUnitMovementDistance = 5;
+    canSetRallyPoints = YES;
     
     // player's squad
     selectedUnit  = [KKNode node];
@@ -191,6 +214,8 @@
     float playerEnergyLevelIndicatorHeight = 20.0;
     
     playerHUDRoot = [KKNode node];
+    playerHUDRoot.zPosition = 1000;
+    
     playerEnergyLevelIndicator = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(0.0, playerEnergyLevelIndicatorHeight)];
     playerEnergyCount = [KKLabelNode node];
     
@@ -201,7 +226,7 @@
     [playerHUDRoot addChild:playerEnergyLevelIndicator];
     [playerHUDRoot addChild:playerEnergyCount];
     
-    [mapRoot addChild:playerHUDRoot];
+    [self addChild:playerHUDRoot];
 }
 
 -(void) unitCapturedTile:(KKNode*)tile
@@ -265,12 +290,18 @@
     }
 }
 
--(void) removeEnergy:(float)energyAmount FromPlayer:(int)playerId
+-(bool) removeEnergy:(float)energyAmount FromPlayer:(int)playerId
 {
-    if (playerId == 1)
+    if (playerEnergyLevel-energyAmount<0)
+    {
+        NSLog(@"player has insufficient energy");
+        return false;
+    }
+    else
     {
         playerEnergyLevel-=energyAmount;
         [self updatePlayerEnergyIndicatorAtSpeed:0.1];
+        return true;
     }
 }
 
@@ -301,8 +332,11 @@
     
     SKAction *addEnergyAction = [SKAction runBlock:(dispatch_block_t)^() {
         
-        if ([self addEnergy:unitChargeAmount ToUnit:unit])
-            [self removeEnergy:unitChargeAmount FromPlayer:[[unit.userData valueForKey:@"ownerId"] integerValue]];
+        if ([self removeEnergy:unitChargeAmount FromPlayer:[[unit.userData valueForKey:@"ownerId"] integerValue]])
+            [self addEnergy:unitChargeAmount ToUnit:unit];
+        
+        if (energyLevel>=movementCost)
+            canSetRallyPoints = YES;
     }];
 
     SKAction *blink = [SKAction sequence:@[addEnergyAction,
@@ -485,6 +519,7 @@
         if (energyLevel-movementCost < 0){
             [self cancelUnitMovement];
             [self showUnitHasInsufficientEnergy];
+            canSetRallyPoints = NO;
         }
     }];
     
@@ -514,6 +549,25 @@
     return unitMoveSequenceAction;
 }
 
+-(bool) validateRallyPoint:(CGPoint)newRallyPoint
+{
+    CGPoint lastPoint;
+    // get position to validate against
+    if ([rallyPointQueue count]==0)
+    {
+        lastPoint = [selectedUnit position];
+    }
+    else
+    {
+        lastPoint = [[rallyPointQueue lastObject] CGPointValue];
+    }
+    
+    if (newRallyPoint.x==lastPoint.x || newRallyPoint.y==lastPoint.y)
+        return true;
+    else
+        return false;
+}
+
 -(void) executeRallyPointQueue
 {
     if ([selectedUnit actionForKey:@"isMoving"] || !canSetRallyPoints)
@@ -525,14 +579,6 @@
 
     NSMutableArray* movementSequence = [[NSMutableArray alloc] init];
     
-    /*
-     for (id rallyPoint in rallyPointQueue)
-    {
-        CGPoint destination = [rallyPoint CGPointValue];
-        SKAction* movementStep = [self moveUnitToX:[self mapXatPositionX:destination.x] andY:[self mapYatPositionY:destination.y] ];
-        [movementSequence addObject: movementStep];
-    }
-    */
     [rallyPointQueue enumerateObjectsUsingBlock:^(id rallyPoint, NSUInteger idx, BOOL *stop)
     {
         
@@ -551,6 +597,7 @@
     SKAction *doneAction = [SKAction runBlock:(dispatch_block_t)^() {
         NSLog(@"All moves completed");
         [rallyPointQueue removeAllObjects];
+        canSetRallyPoints = YES;
     }];
     [movementSequence addObject: doneAction];
     
@@ -648,12 +695,13 @@
 -(void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	/* Called when a touch begins */
-	
-	for (UITouch* touch in touches)
-	{
+    UITouch* touch = [[touches allObjects] objectAtIndex:0];
+    
+    if ([touches count]==1)
+    {
         SKNode *n = [self nodeAtPoint:[touch locationInNode:self]];
         
-        NSLog(@"touch began location: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
+        NSLog(@"single touch began: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
         
         if ([n intersectsNode:[selectedUnit childNodeWithName:@"unitMask"]])
         {
@@ -661,18 +709,25 @@
             
             if ([selectedUnit actionForKey:@"isMoving"])
             {
-                // stop unit
+                // immediately stop unit
                 [self cancelUnitMovement];
-
             }
             else
             {
-                // allow reset rally points
-                canSetRallyPoints = YES;
+                willSetRallyPoints = YES;
             }
             
         }
-	}
+        else
+        {
+            willSetRallyPoints = NO;
+        }
+    }
+    else if ([touches count]==2)
+    {
+        NSLog(@"double touch began: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
+        touchOrigin = [touch locationInNode:self];
+    }
 	
 	// (optional) call super implementation to allow KKScene to dispatch touch events
 	[super touchesBegan:touches withEvent:event];
@@ -680,29 +735,55 @@
 
 -(void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    for (UITouch* touch in touches)
-	{
+    //for (UITouch* touch in touches){}
+    
+    UITouch* touch = [[touches allObjects] objectAtIndex:0];
+    
+    if ([touches count]==1)
+    {
         CGPoint location = [touch locationInNode:mapRoot];
-        NSLog(@"touch moved: %f, %f",location.x, location.y);
+        NSLog(@"single touch moved: %f, %f",location.x, location.y);
         
         SKNode *n = [self nodeAtPoint:[touch locationInNode:self]];
         if (n != self && [n.name isEqual: @"tileMask"]) {
             NSLog(@"touched tile");
             
-            if (canSetRallyPoints && ![selectedUnit actionForKey:@"isMoving"] && n.hidden)
+            if (canSetRallyPoints && willSetRallyPoints && ![selectedUnit actionForKey:@"isMoving"] && n.hidden)
             {
-                NSLog(@"adding rally point");
-                n.hidden = NO;
-                [n.parent childNodeWithName:@"tileOutline"].hidden = NO;
-                [rallyPointQueue addObject:[NSValue valueWithCGPoint:n.parent.position]];
-                if ([rallyPointQueue count]>=maxUnitMovementDistance)
+                
+                if ([self validateRallyPoint:n.parent.position])
                 {
-                    [self executeRallyPointQueue];
+                    NSLog(@"adding rally point");
+                    n.hidden = NO;
+                    [n.parent childNodeWithName:@"tileOutline"].hidden = NO;
+                    
+                    
+                    [rallyPointQueue addObject:[NSValue valueWithCGPoint:n.parent.position]];
+                    if ([rallyPointQueue count]>=maxUnitMovementDistance)
+                    {
+                        [self executeRallyPointQueue];
+                    }
                 }
+                else
+                    NSLog(@"invalid rally point");
+                
             }
             
         }
-	}
+    }
+    else if ([touches count]==2)
+    {
+        NSLog(@"double touch moved: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
+        
+        touchDestination = [touch locationInNode:self];
+        float deltaX = touchDestination.x-touchOrigin.x;
+        float deltaY = touchDestination.y-touchOrigin.y;
+        
+        CGPoint newCameraPosition = CGPointMake(cameraRoot.position.x+deltaX, cameraRoot.position.y+deltaY);
+        cameraRoot.position = newCameraPosition;
+        
+        touchOrigin = [touch locationInNode:self];
+    }
 }
 
 -(void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -710,12 +791,13 @@
     for (UITouch* touch in touches)
 	{
         
-        if (canSetRallyPoints)
+        if (willSetRallyPoints)
         {
             CGPoint location = [touch locationInNode:mapRoot];
             NSLog(@"touch moved: %f, %f",location.x, location.y);
             
             [self executeRallyPointQueue];
+            willSetRallyPoints = NO;
         }
         
     }
@@ -750,6 +832,20 @@
         NSLog(@"long press ended");
         [self finishChargingUnit:selectedUnit];
     }
+}
+
+#pragma mark camera movement
+
+- (void)didSimulatePhysics
+{
+    [self centerOnNode: cameraRoot];
+    [super didSimulatePhysics];
+}
+
+- (void) centerOnNode: (SKNode *) node
+{
+    CGPoint cameraPositionInScene = [node.scene convertPoint:node.position fromNode:node.parent];
+    node.parent.position = CGPointMake(node.parent.position.x - cameraPositionInScene.x, node.parent.position.y - cameraPositionInScene.y);
 }
 
 @end
