@@ -12,19 +12,40 @@
 {
     float tileWidth;
     KKNode* mapRoot;
-    KKNode* selectedUnit;
-    KKNode* touchIndicatorRoot;
     NSMutableArray* mapTiles;
     
+    // rally point management
+    KKNode* selectedUnit;
+    KKSpriteNode* selectedUnitBody;
+    KKNode* touchIndicatorRoot;
+   
     bool canSetRallyPoints;
     
-    //unit properties
+    // player energy
+    KKNode* playerHUDRoot;
+    KKSpriteNode* playerEnergyLevelIndicator;
+    KKLabelNode* playerEnergyCount;
+    float playerEnergyLevelMaxSize;
+    float playerEnergyMax;
+    float playerEnergyLevel;
+    
+    // unit properties
     NSMutableArray* rallyPointQueue;
+    int maxUnitMovementDistance;
     float movementSpeed;
+    float movementCost;
     float energyLevel;
     float energyMax;
+    float energyRechargeSpeed;
+    float energyRechargeAmount;
     float indicatorBarWidth;
     KKSpriteNode* energyIndicator;
+    
+    // battery properties
+    float batteryMaxSize;
+    float batteryEnergyMax;
+    float batteryEnergyLevel;
+    KKSpriteNode* batteryLevelIndicator;
 }
 
 -(id) initWithSize:(CGSize)size
@@ -34,13 +55,41 @@
 	{
 		/* Setup your scene here */
 		self.backgroundColor = [SKColor colorWithRed:0.4 green:0.0 blue:0.4 alpha:1.0];
+        
+        self.physicsWorld.gravity = CGVectorMake(0.0, 0.0);
+        self.physicsWorld.contactDelegate = self;
+        
         tileWidth = 50.0;
         canSetRallyPoints = NO;
         
         [self renderMap];
-		
+		[self setupPlayerHUD];
+        //[self setupGestureRecognizers];
 	}
 	return self;
+}
+
+- (void)didMoveToView:(SKView *)view
+{
+    [super didMoveToView:view];
+    
+    // add gesture recognizers here!
+    //http://stackoverflow.com/questions/19040347/uipangesturerecognizer-in-skscene
+    
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+    [longPressGesture setMinimumPressDuration:0.5];
+    longPressGesture.numberOfTouchesRequired = 1;
+    longPressGesture.delegate = self;
+    [view addGestureRecognizer:longPressGesture];
+}
+
+-(void) setupGestureRecognizers
+{
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+    [longPressGesture setMinimumPressDuration:0.5];
+    longPressGesture.numberOfTouchesRequired = 1;
+    longPressGesture.delegate = self;
+    [self.view addGestureRecognizer:longPressGesture];
 }
 
 -(void) renderMap
@@ -65,6 +114,7 @@
     [mapRoot addChild:touchIndicatorRoot];
     
     [self setupUnits];
+    [self setupBatteries];
 }
 
 -(void) setupUnits
@@ -72,34 +122,266 @@
     float unitWidth = 40.0;
     
     indicatorBarWidth = 30.0;
+    maxUnitMovementDistance = 5;
     
-    //player's squad
-    KKNode* mechUnit = [KKNode node];
+    // player's squad
+    selectedUnit  = [KKNode node];
     
-    KKSpriteNode* mechUnitBody = [KKSpriteNode spriteNodeWithColor:[UIColor blueColor] size:CGSizeMake(unitWidth, unitWidth)];
-    mechUnitBody.name = @"unit";
+    selectedUnit.userData = [[NSMutableDictionary alloc] init];
+    [selectedUnit.userData setValue:[NSNumber numberWithInt:1] forKey:@"ownerId"];
+    
+    selectedUnitBody = [KKSpriteNode spriteNodeWithColor:[UIColor blueColor] size:CGSizeMake(unitWidth, unitWidth)];
+    selectedUnitBody.name = @"unitBody";
+    selectedUnitBody.physicsBody.dynamic = YES;
+    selectedUnitBody.physicsBody.restitution = 0.2;
+    selectedUnitBody.physicsBody.allowsRotation = YES;
+    selectedUnitBody.physicsBody.mass = 0.0;
+    
+    KKSpriteNode* unitBodyAura = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(unitWidth*2, unitWidth*2)];
+    unitBodyAura.name = @"unitBodyAura";
+    unitBodyAura.hidden = YES;
+    
+    KKSpriteNode* unitMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(unitWidth, unitWidth)];
+    unitMask.name = @"unitMask";
     
     energyIndicator = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(indicatorBarWidth, 5.0)];
     energyIndicator.position = CGPointMake(0.0,40.0);
     
-    [mechUnit addChild:energyIndicator];
-    [mechUnit addChild:mechUnitBody];
+    // setup unit facing direction
+
+    KKShapeNode* faceDirection = [KKShapeNode node];
+    faceDirection.position = CGPointMake(-10.0, -10.0);
+    CGPoint triangle[] = {CGPointMake(0.0, 0.0), CGPointMake(10.0, 20.0), CGPointMake(20.0, 0.0)};
+    CGMutablePathRef facingPointer = CGPathCreateMutable();
+    CGPathAddLines(facingPointer, NULL, triangle, 3);
+    faceDirection.path = facingPointer;
+    faceDirection.lineWidth = 1.0;
+    faceDirection.fillColor = [SKColor whiteColor];
+    faceDirection.strokeColor = [SKColor clearColor];
+    faceDirection.glowWidth = 0.0;
     
-    
-    selectedUnit = mechUnit;
     energyMax = 1000.0;
     energyLevel = 1000.0;
-    movementSpeed = 2.0;
+    movementSpeed = 5.0;
+    movementCost = 50.0;
     rallyPointQueue = [[NSMutableArray alloc] init];
     
-                                  
-    [self addObject:mechUnit ToMapAtX:1 andY:5];
+    // build unit
+    [selectedUnit addChild:energyIndicator];
+    [selectedUnit addChild:selectedUnitBody];
+    [selectedUnit addChild:unitBodyAura];
+    [selectedUnitBody addChild:faceDirection];
+    [selectedUnit addChild:unitMask];
     
+    [self addObject:(KKNode*)selectedUnit ToMapAtX:1 andY:5];
 }
--(void) updateEnergyIndicator
+
+-(void) setupPlayerHUD
 {
-    SKAction *resizeIndicator = [SKAction resizeToWidth:indicatorBarWidth*(energyLevel/energyMax) duration:movementSpeed/2];
+    /*
+     KKNode* playerHUDRoot;
+     KKSpriteNode* playerEnergyLevelIndicator;
+     float playerEnergyLevelMaxSize;
+     float playerEnergyMax;
+     float playerEnergyLevel;
+     */
+    playerEnergyLevelMaxSize = 100.0;
+    playerEnergyMax = 1000.0;
+    playerEnergyLevel = 0.0;
+    float playerEnergyLevelIndicatorHeight = 20.0;
+    
+    playerHUDRoot = [KKNode node];
+    playerEnergyLevelIndicator = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(0.0, playerEnergyLevelIndicatorHeight)];
+    playerEnergyCount = [KKLabelNode node];
+    
+    //HUD anchored in top left corner
+    playerEnergyLevelIndicator.position = CGPointMake(playerEnergyLevelMaxSize/2,0.0);
+    playerEnergyCount.position = CGPointMake(playerEnergyLevelMaxSize/2,playerEnergyLevelIndicatorHeight);
+    
+    [playerHUDRoot addChild:playerEnergyLevelIndicator];
+    [playerHUDRoot addChild:playerEnergyCount];
+    
+    [mapRoot addChild:playerHUDRoot];
+}
+
+-(void) unitCapturedTile:(KKNode*)tile
+{
+    int playerId = [[selectedUnit.userData valueForKey:@"ownerId"] intValue];
+    
+    // derive energy amount added from tile
+    float energyAmount = [self setOwner:playerId ForTile:(KKSpriteNode*)tile];
+    
+    [self addEnergy:energyAmount ToPlayer:playerId];
+    
+    [tile childNodeWithName:@"tileMask"].hidden = YES;
+    [tile childNodeWithName:@"tileOutline"].hidden = YES;
+    
+    [self updateEnergyIndicatorAtSpeed:0.5];
+}
+
+-(void) updatePlayerEnergyIndicatorAtSpeed: (float)speed
+{
+    playerEnergyCount.text = [NSString stringWithFormat:@"%i",[[NSNumber numberWithFloat:playerEnergyLevel] intValue]];
+    
+    SKAction *resizeIndicator = [SKAction resizeToWidth:playerEnergyLevelMaxSize*(playerEnergyLevel/playerEnergyMax) duration:speed];
+    [playerEnergyLevelIndicator runAction:resizeIndicator];
+}
+
+-(float) setOwner:(int)ownerId ForTile:(KKSpriteNode*)tileRoot
+{
+    int currentTileOwner = [[tileRoot.userData valueForKey:@"ownerId"] integerValue];
+    float energyCaptured;
+    
+    if (currentTileOwner==0){
+        energyCaptured = 50.0;
+    }
+    else if (ownerId == currentTileOwner){
+        energyCaptured = 10.0;
+    }
+    else {
+        energyCaptured = 75.0;
+    }
+
+    [tileRoot.userData setValue:[NSNumber numberWithInt:ownerId] forKey:@"ownerId"];
+
+    if (ownerId == 1)
+    {
+        tileRoot.color = [UIColor greenColor];
+    }
+    else if (ownerId == 2)
+    {
+        tileRoot.color = [UIColor orangeColor];
+    }
+    
+    return energyCaptured;
+}
+
+-(void) addEnergy:(float)energyAmount ToPlayer:(int)playerId
+{
+    if (playerId == 1)
+    {
+        playerEnergyLevel+=energyAmount;
+        [self updatePlayerEnergyIndicatorAtSpeed:0.1];
+    }
+}
+
+-(void) removeEnergy:(float)energyAmount FromPlayer:(int)playerId
+{
+    if (playerId == 1)
+    {
+        playerEnergyLevel-=energyAmount;
+        [self updatePlayerEnergyIndicatorAtSpeed:0.1];
+    }
+}
+
+-(bool) addEnergy:(float)energyAmount ToUnit:(KKNode*)unit
+{
+    if (energyLevel==energyMax){
+        NSLog(@"unit fully charged");
+        return false;
+    }
+    if (energyLevel+energyAmount>energyMax){
+        energyAmount = energyMax-energyLevel;
+    }
+    
+    [self updateUnitEnergy:energyAmount AtSpeed:0.2];
+    return true;
+}
+
+-(void) beginChargingUnit:(KKNode*)unit
+{
+    // show unit is charging
+    KKSpriteNode* unitBody = (KKSpriteNode*)[unit childNodeWithName:@"unitBody"];
+    unitBody.color = [UIColor yellowColor];
+    KKSpriteNode* unitBodyAura = (KKSpriteNode*)[unit childNodeWithName:@"unitBodyAura"];
+    unitBodyAura.hidden = NO;
+    
+    float unitChargeSpeed = 0.5;
+    float unitChargeAmount = 50.0; // TODO should equal to unit movement cost?
+    
+    SKAction *addEnergyAction = [SKAction runBlock:(dispatch_block_t)^() {
+        
+        if ([self addEnergy:unitChargeAmount ToUnit:unit])
+            [self removeEnergy:unitChargeAmount FromPlayer:[[unit.userData valueForKey:@"ownerId"] integerValue]];
+    }];
+
+    SKAction *blink = [SKAction sequence:@[addEnergyAction,
+                                           [SKAction fadeOutWithDuration:unitChargeSpeed/2],
+                                           [SKAction fadeInWithDuration:unitChargeSpeed/2]]];
+    SKAction *blinkForever = [SKAction repeatActionForever:blink];
+    [unitBodyAura runAction:blinkForever withKey:@"unitCharging"];
+}
+
+-(void) finishChargingUnit:(KKNode*)unit
+{
+    KKSpriteNode* unitBody = (KKSpriteNode*)[unit childNodeWithName:@"unitBody"];
+    KKSpriteNode* unitBodyAura = (KKSpriteNode*)[unit childNodeWithName:@"unitBodyAura"];
+    
+    unitBody.color = [UIColor blueColor];
+    
+    [unitBodyAura removeActionForKey:@"unitCharging"];
+    unitBodyAura.alpha = 1.0;
+    unitBodyAura.hidden = YES;
+}
+
+-(void) setupBatteries
+{
+    [self setupBatteryAtX:5 andY:3];
+    [self setupBatteryAtX:2 andY:3];
+    [self setupBatteryAtX:7 andY:1];
+    [self setupBatteryAtX:6 andY:4];
+    [self setupBatteryAtX:1 andY:2];
+}
+
+-(void) setupBatteryAtX:(int)x andY:(int)y
+{
+    KKNode* batteryRoot = [KKNode node];
+    
+    // battery shell
+    KKSpriteNode* batteryShell = [KKSpriteNode spriteNodeWithColor:[UIColor blackColor] size:CGSizeMake(batteryMaxSize, batteryMaxSize)];
+    
+    // battery level
+    KKSpriteNode* batteryLevelIndicator = [KKSpriteNode spriteNodeWithColor:[UIColor greenColor] size:CGSizeMake(batteryMaxSize, batteryMaxSize)];
+    
+    [batteryRoot addChild:batteryShell];
+    [batteryRoot addChild:batteryLevelIndicator];
+    
+    [self addObject:batteryRoot ToMapAtX:x andY:y];
+}
+
+-(void) unitMovedWithEnergy
+{
+    [self updateUnitEnergy:-movementCost AtSpeed:movementSpeed];
+}
+
+-(void) updateUnitEnergy: (float)energyAmount AtSpeed:(float)speed
+{
+    energyLevel+=energyAmount;
+    [self updateEnergyIndicatorAtSpeed:speed];
+}
+
+-(void) updateEnergyIndicatorAtSpeed: (float)speed
+{
+    SKAction *resizeIndicator = [SKAction resizeToWidth:indicatorBarWidth*(energyLevel/energyMax) duration:0.1];
     [energyIndicator runAction:resizeIndicator];
+}
+
+-(void) showUnitHasInsufficientEnergy
+{
+    selectedUnitBody.color = [UIColor redColor];
+}
+
+
+-(void) cancelUnitMovement
+{
+    [selectedUnit removeActionForKey:@"isMoving"];
+    [rallyPointQueue removeAllObjects];
+    
+    [mapRoot enumerateChildNodesWithName:@"tile" usingBlock:^(SKNode *node, BOOL *stop)
+     {
+         [node childNodeWithName:@"tileMask"].hidden = YES;
+         [node childNodeWithName:@"tileOutline"].hidden = YES;
+     }];
 }
 
 -(CGPoint) positionAtMapX:(int)x andY: (int)y
@@ -138,8 +420,8 @@
 -(SKAction*) moveUnitToX:(int)x andY: (int)y
 {
     //TODO calculate duration from unit's movement speed
-    int tileCountX = x-[self mapXForNode:selectedUnit];
-    int tileCountY = y-[self mapYForNode:selectedUnit];
+    int tileCountX = x-[self mapXForNode:(KKNode*)selectedUnit];
+    int tileCountY = y-[self mapYForNode:(KKNode*)selectedUnit];
     NSLog(@"moving by tiles: %i, %i", tileCountX, tileCountY);
     
     //horizontal and vertical movement is separated
@@ -149,13 +431,7 @@
     
     SKAction *unitMoveDoneAction = [SKAction runBlock:(dispatch_block_t)^() {
         NSLog(@"Move Completed");
-        /*
-        [self removeLastRallyPoint];
-        if ([rallyPointQueue count]<=1)
-        {
-            [selectedUnit removeAllActions];
-        }
-        */
+        
     }];
     
     SKAction *unitMoveSequence = [SKAction sequence:@[unitMoveHorizontalAction, unitMoveVerticalAction, unitMoveDoneAction]];
@@ -177,24 +453,73 @@
     NSLog(@"finish at: %i, %i", finishX, finishY);
     NSLog(@"distance: %i, %i", tileCountX, tileCountY);
     
-    //horizontal and vertical movement is separated
+    float horizontalRotation = (tileCountX>0)?-M_PI/2:M_PI/2;
+    float verticalRotation = (tileCountY>0)?0:M_PI;
+    
+    // horizontal and vertical movement is separated
+    //SKAction* unitFaceHorizontalAction = [SKAction rotateByAngle:M_PI duration:1.0];
+    SKAction* unitFaceHorizontalAction = [SKAction rotateToAngle:horizontalRotation duration:0.1 shortestUnitArc:YES];
+    SKAction *unitFaceHorizontalChildAction = [SKAction runBlock:(dispatch_block_t)^() {
+        [selectedUnitBody runAction:unitFaceHorizontalAction];
+    }];
+
     SKAction *unitMoveHorizontalAction = [SKAction moveToX:finish.x duration:[self moveDurationAcrossTiles:tileCountX AtSpeed:movementSpeed]];
+    
+    //SKAction* unitFaceVerticalAction = [SKAction rotateByAngle:M_PI duration:1.0];
+    SKAction* unitFaceVerticalAction = [SKAction rotateToAngle:verticalRotation duration:0.1 shortestUnitArc:YES];
+    SKAction *unitFaceVerticalChildAction = [SKAction runBlock:(dispatch_block_t)^() {
+        [selectedUnitBody runAction:unitFaceVerticalAction];
+    }];
     
     SKAction *unitMoveVerticalAction = [SKAction moveToY:finish.y duration:[self moveDurationAcrossTiles:tileCountY AtSpeed:movementSpeed]];
     
     SKAction *unitMoveDoneAction = [SKAction runBlock:(dispatch_block_t)^() {
         NSLog(@"Move Completed");
+        NSLog(@"energy level: %f", energyLevel);
+        NSLog(@"root rotation: %f",selectedUnit.zRotation);
+        NSLog(@"body rotation: %f",selectedUnitBody.zRotation);
+        
+        [self unitMovedWithEnergy];
+        
+        // check if unit has enough energy to move again
+        if (energyLevel-movementCost < 0){
+            [self cancelUnitMovement];
+            [self showUnitHasInsufficientEnergy];
+        }
     }];
     
-    SKAction *unitMoveSequence = [SKAction sequence:@[unitMoveHorizontalAction, unitMoveVerticalAction, unitMoveDoneAction]];
+    NSMutableArray* unitMoveSequence = [[NSMutableArray alloc] init];
     
-    return unitMoveSequence;
+    if (tileCountX!=0)
+    {
+        NSLog(@"horizontal rotation: %f",horizontalRotation);
+        //[unitMoveSequence addObject:unitFaceHorizontalAction];
+        [unitMoveSequence addObject:unitFaceHorizontalChildAction];
+        [unitMoveSequence addObject:unitMoveHorizontalAction];
+    }
+    if (tileCountY!=0)
+    {
+        NSLog(@"vertical rotation: %f",verticalRotation);
+        //[unitMoveSequence addObject:unitFaceVerticalAction];
+        [unitMoveSequence addObject:unitFaceVerticalChildAction];
+        [unitMoveSequence addObject:unitMoveVerticalAction];
+    }
+    
+    [unitMoveSequence addObject:unitMoveDoneAction];
+    
+    NSLog(@"move sequence: %@",unitMoveSequence);
+    
+    SKAction *unitMoveSequenceAction = [SKAction sequence:unitMoveSequence];
+    
+    return unitMoveSequenceAction;
 }
 
 -(void) executeRallyPointQueue
 {
-    if ([selectedUnit actionForKey:@"isMoving"])
+    if ([selectedUnit actionForKey:@"isMoving"] || !canSetRallyPoints)
         return;
+    
+    canSetRallyPoints = NO;
     
     NSLog(@"rally point queue: %@", rallyPointQueue);
 
@@ -258,10 +583,9 @@
 -(void) addMapTileAtX:(int)x andY: (int)y
 {
     
-    //KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithColor:[UIColor greenColor] size:CGSizeMake(tileWidth, tileWidth)];
+    KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
     
     KKShapeNode* tileOutline = [KKShapeNode node];
-    tileOutline.name = @"tile";
     CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
     CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-tileWidth/2, -tileWidth/2, tileWidth, tileWidth));
     tileOutline.path = tileOutlinePath;
@@ -270,16 +594,29 @@
     tileOutline.strokeColor = [SKColor whiteColor];
     tileOutline.glowWidth = 0.0;
     tileOutline.hidden = YES;
-    /*
-    [mapTile addChild:tileOutline];
-    mapTile.position = [self positionAtMapX:x andY:y];
-    [mapRoot addChild:mapTile];
-     */
+    tileOutline.name = @"tileOutline";
     
-    tileOutline.position = [self positionAtMapX:x andY:y];
-    [mapRoot addChild:tileOutline];
+    KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
+    tileMask.name = @"tileMask";
+    tileMask.hidden = YES;
+    
+    mapTile.name = @"tile";
+    mapTile.position = [self positionAtMapX:x andY:y];
+    //mapTile.hidden = YES;
+    mapTile.userData = [[NSMutableDictionary alloc] init];
+    [mapTile.userData setValue:[NSNumber numberWithInt:0] forKey:@"ownerId"];
+    
+    [mapTile addChild:tileOutline];
+    [mapTile addChild:tileMask];
+    
+    [mapRoot addChild:mapTile];
     
     [mapTiles addObject:tileOutline];
+}
+
+-(void) setLoopMovementPath
+{
+    NSLog(@"loop formed!");
 }
 
 -(void)highlightTile: (KKNode*)mapTile
@@ -296,7 +633,11 @@
     {
         if ([selectedUnit intersectsNode:node])
         {
-            node.hidden = YES;
+            if ([node childNodeWithName:@"tileMask"].hidden == NO)
+            {
+                NSLog(@"unit moved over tile");
+                [self unitCapturedTile:(KKNode*)node];
+            }
         }
 	}];
     
@@ -311,10 +652,25 @@
 	for (UITouch* touch in touches)
 	{
         SKNode *n = [self nodeAtPoint:[touch locationInNode:self]];
-        if (n != self && [n.name isEqual: @"unit"]) {
+        
+        NSLog(@"touch began location: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
+        
+        if ([n intersectsNode:[selectedUnit childNodeWithName:@"unitMask"]])
+        {
             NSLog(@"touched unit");
             
-            canSetRallyPoints = YES;
+            if ([selectedUnit actionForKey:@"isMoving"])
+            {
+                // stop unit
+                [self cancelUnitMovement];
+
+            }
+            else
+            {
+                // allow reset rally points
+                canSetRallyPoints = YES;
+            }
+            
         }
 	}
 	
@@ -328,18 +684,21 @@
 	{
         CGPoint location = [touch locationInNode:mapRoot];
         NSLog(@"touch moved: %f, %f",location.x, location.y);
-        float gridX = floorf((location.x/tileWidth));
-        float gridY = floorf((location.y/tileWidth));
-        //[self addTouchIndicatorAtX:gridX andY:gridY];
         
         SKNode *n = [self nodeAtPoint:[touch locationInNode:self]];
-        if (n != self && [n.name isEqual: @"tile"]) {
+        if (n != self && [n.name isEqual: @"tileMask"]) {
             NSLog(@"touched tile");
             
             if (canSetRallyPoints && ![selectedUnit actionForKey:@"isMoving"] && n.hidden)
             {
-                [rallyPointQueue addObject:[NSValue valueWithCGPoint:n.position]];
+                NSLog(@"adding rally point");
                 n.hidden = NO;
+                [n.parent childNodeWithName:@"tileOutline"].hidden = NO;
+                [rallyPointQueue addObject:[NSValue valueWithCGPoint:n.parent.position]];
+                if ([rallyPointQueue count]>=maxUnitMovementDistance)
+                {
+                    [self executeRallyPointQueue];
+                }
             }
             
         }
@@ -350,16 +709,47 @@
 {
     for (UITouch* touch in touches)
 	{
-        CGPoint location = [touch locationInNode:mapRoot];
-        NSLog(@"touch moved: %f, %f",location.x, location.y);
-        float gridX = floorf((location.x/tileWidth));
-        float gridY = floorf((location.y/tileWidth));
-        [self addTouchIndicatorAtX:gridX andY:gridY];
+        
+        if (canSetRallyPoints)
+        {
+            CGPoint location = [touch locationInNode:mapRoot];
+            NSLog(@"touch moved: %f, %f",location.x, location.y);
+            
+            [self executeRallyPointQueue];
+        }
+        
     }
     
-    canSetRallyPoints = NO;
-    [self executeRallyPointQueue];
+    
 }
 
+- (void) handleLongPressGesture: (UIGestureRecognizer *)recognizer
+{
+    if (recognizer.state == UIGestureRecognizerStateBegan)
+    {
+        CGPoint touchPoint = [recognizer locationOfTouch:0 inView:self.view];
+        NSLog(@"long press began: %f,%f",touchPoint.x,touchPoint.y);
+        
+        // translate touch location into scene's coordinate system by flipping y value
+        touchPoint.y = 320.0-touchPoint.y;
+        
+        SKNode *n = [self nodeAtPoint:touchPoint];
+        if (n != self && [n.name isEqual: @"unitMask"]) {
+        
+            NSLog(@"long press on unit");
+            [self beginChargingUnit:selectedUnit];
+        }
+    }
+    if (recognizer.state == UIGestureRecognizerStateChanged)
+    {
+        NSLog(@"long press changed");
+    }
+    
+    if (recognizer.state == UIGestureRecognizerStateEnded)
+    {
+        NSLog(@"long press ended");
+        [self finishChargingUnit:selectedUnit];
+    }
+}
 
 @end

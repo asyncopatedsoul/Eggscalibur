@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C3FA7D818982D530048B9A8 /* EHMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* EHMechUnit.m */; };
+		4C3FA7D918982D530048B9A8 /* EHMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* EHMechUnit.m */; };
 		DC042A83178C5A06009FDBF8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */; };
 		DC042A84178C5A12009FDBF8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95BA771786DF8600E31DA6 /* SystemConfiguration.framework */; };
 		DC09DB8E178C84C6000E0B61 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DC09DB8D178C84C6000E0B61 /* MainMenu.xib */; };
@@ -119,6 +121,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C3FA7D618982D530048B9A8 /* EHMechUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EHMechUnit.h; sourceTree = "<group>"; };
+		4C3FA7D718982D530048B9A8 /* EHMechUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EHMechUnit.m; sourceTree = "<group>"; };
 		DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		DC09DB8D178C84C6000E0B61 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		DC0C220517CF9C97007FE7B8 /* MyScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyScene.h; sourceTree = "<group>"; };
@@ -375,6 +379,8 @@
 			isa = PBXGroup;
 			children = (
 				DCD7EC42178C573500BBAFB0 /* AppDelegate.h */,
+				4C3FA7D618982D530048B9A8 /* EHMechUnit.h */,
+				4C3FA7D718982D530048B9A8 /* EHMechUnit.m */,
 				DCD7EC43178C573500BBAFB0 /* AppDelegate.m */,
 				DCD7EC48178C573500BBAFB0 /* ViewController.h */,
 				DCD7EC49178C573500BBAFB0 /* ViewController.m */,
@@ -643,6 +649,7 @@
 				DC0C220817CF9C97007FE7B8 /* MyScene.m in Sources */,
 				DCEF831917CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
 				DCD7EC4D178C573500BBAFB0 /* ViewController.m in Sources */,
+				4C3FA7D918982D530048B9A8 /* EHMechUnit.m in Sources */,
 				EC6ACF9F18960D6700236983 /* SoloScene.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -656,6 +663,7 @@
 				DC0C220717CF9C97007FE7B8 /* MyScene.m in Sources */,
 				DCEF831817CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
 				DCD7A28D178C7526004A0467 /* main.m in Sources */,
+				4C3FA7D818982D530048B9A8 /* EHMechUnit.m in Sources */,
 				EC6ACF9E18960D6700236983 /* SoloScene.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

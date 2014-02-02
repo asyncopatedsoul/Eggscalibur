@@ -8,6 +8,6 @@
 
 #import "KKScene.h"
 
-@interface SoloScene : KKScene
+@interface SoloScene : KKScene <UIGestureRecognizerDelegate>
 
 @end
