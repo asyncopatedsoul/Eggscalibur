@@ -241,7 +241,7 @@
     [tile childNodeWithName:@"tileMask"].hidden = YES;
     [tile childNodeWithName:@"tileOutline"].hidden = YES;
     
-    [self updateEnergyIndicatorAtSpeed:0.5];
+    //[self updateEnergyIndicatorAtSpeed:0.5];
 }
 
 -(void) updatePlayerEnergyIndicatorAtSpeed: (float)speed
@@ -281,13 +281,26 @@
     return energyCaptured;
 }
 
--(void) addEnergy:(float)energyAmount ToPlayer:(int)playerId
+-(bool) addEnergy:(float)energyAmount ToPlayer:(int)playerId
 {
     if (playerId == 1)
     {
-        playerEnergyLevel+=energyAmount;
-        [self updatePlayerEnergyIndicatorAtSpeed:0.1];
+        if (playerEnergyLevel>=playerEnergyMax){
+            NSLog(@"player energy full");
+            return false;
+        }
+        else
+        {
+            if (playerEnergyLevel+energyAmount>playerEnergyMax){
+                energyAmount = playerEnergyMax-playerEnergyLevel;
+            }
+            playerEnergyLevel+=energyAmount;
+            [self updatePlayerEnergyIndicatorAtSpeed:0.1];
+            return true;
+        }
     }
+    else
+        return false;
 }
 
 -(bool) removeEnergy:(float)energyAmount FromPlayer:(int)playerId
@@ -328,15 +341,9 @@
     unitBodyAura.hidden = NO;
     
     float unitChargeSpeed = 0.5;
-    float unitChargeAmount = 50.0; // TODO should equal to unit movement cost?
     
     SKAction *addEnergyAction = [SKAction runBlock:(dispatch_block_t)^() {
-        
-        if ([self removeEnergy:unitChargeAmount FromPlayer:[[unit.userData valueForKey:@"ownerId"] integerValue]])
-            [self addEnergy:unitChargeAmount ToUnit:unit];
-        
-        if (energyLevel>=movementCost)
-            canSetRallyPoints = YES;
+        [self transferEnergyFromPlayerToUnit:unit];
     }];
 
     SKAction *blink = [SKAction sequence:@[addEnergyAction,
@@ -344,6 +351,21 @@
                                            [SKAction fadeInWithDuration:unitChargeSpeed/2]]];
     SKAction *blinkForever = [SKAction repeatActionForever:blink];
     [unitBodyAura runAction:blinkForever withKey:@"unitCharging"];
+}
+
+-(void) transferEnergyFromPlayerToUnit:(KKNode*)unit
+{
+    float unitChargeMultiple = 2.0;
+    float unitChargeAmount = 50.0;
+    
+    if (energyLevel<energyMax){
+        if ([self removeEnergy:unitChargeAmount FromPlayer:[[unit.userData valueForKey:@"ownerId"] integerValue]]){
+            [self addEnergy:unitChargeAmount*unitChargeMultiple ToUnit:unit];
+        }
+    }
+    if (energyLevel>=movementCost){
+        canSetRallyPoints = YES;
+    }
 }
 
 -(void) finishChargingUnit:(KKNode*)unit
@@ -710,7 +732,7 @@
             if ([selectedUnit actionForKey:@"isMoving"])
             {
                 // immediately stop unit
-                [self cancelUnitMovement];
+                //[self cancelUnitMovement];
             }
             else
             {
@@ -776,11 +798,29 @@
         NSLog(@"double touch moved: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
         
         touchDestination = [touch locationInNode:self];
-        float deltaX = touchDestination.x-touchOrigin.x;
-        float deltaY = touchDestination.y-touchOrigin.y;
+        float cameraMovementMultiple = 2.0;
         
-        CGPoint newCameraPosition = CGPointMake(cameraRoot.position.x+deltaX, cameraRoot.position.y+deltaY);
+        float deltaX = (touchDestination.x-touchOrigin.x)*cameraMovementMultiple;
+        float deltaY = (touchDestination.y-touchOrigin.y)*cameraMovementMultiple;
+        
+        float newX = cameraRoot.position.x+deltaX;
+        float newY = cameraRoot.position.y+deltaY;
+        
+        if (newX<-80.0){
+            newX=-80.0;
+        }else if (newX>20.0){
+            newX=20.0;
+        }
+        
+        if (newY>260.0){
+            newY=260.0;
+        } else if (newY<-80.0){
+            newY=-80.0;
+        }
+        
+        CGPoint newCameraPosition = CGPointMake(newX,newY);
         cameraRoot.position = newCameraPosition;
+        NSLog(@"new camera position: %f,%f",newCameraPosition.x,newCameraPosition.y);
         
         touchOrigin = [touch locationInNode:self];
     }
