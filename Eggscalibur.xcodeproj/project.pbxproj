@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C1A3655189F2B68005BBDFF /* GameCenterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A3654189F2B68005BBDFF /* GameCenterManager.m */; };
+		4C1A3656189F2B68005BBDFF /* GameCenterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A3654189F2B68005BBDFF /* GameCenterManager.m */; };
 		4C3FA7D818982D530048B9A8 /* EHMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* EHMechUnit.m */; };
 		4C3FA7D918982D530048B9A8 /* EHMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* EHMechUnit.m */; };
 		DC042A83178C5A06009FDBF8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */; };
@@ -121,6 +123,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C1A3653189F2B68005BBDFF /* GameCenterManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameCenterManager.h; sourceTree = "<group>"; };
+		4C1A3654189F2B68005BBDFF /* GameCenterManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GameCenterManager.m; sourceTree = "<group>"; };
 		4C3FA7D618982D530048B9A8 /* EHMechUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EHMechUnit.h; sourceTree = "<group>"; };
 		4C3FA7D718982D530048B9A8 /* EHMechUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EHMechUnit.m; sourceTree = "<group>"; };
 		DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
@@ -378,6 +382,8 @@
 		DCD11E39178C522300FBC406 /* Eggscalibur */ = {
 			isa = PBXGroup;
 			children = (
+				4C1A3653189F2B68005BBDFF /* GameCenterManager.h */,
+				4C1A3654189F2B68005BBDFF /* GameCenterManager.m */,
 				DCD7EC42178C573500BBAFB0 /* AppDelegate.h */,
 				4C3FA7D618982D530048B9A8 /* EHMechUnit.h */,
 				4C3FA7D718982D530048B9A8 /* EHMechUnit.m */,
@@ -648,6 +654,7 @@
 				DCD11E40178C522300FBC406 /* main.m in Sources */,
 				DC0C220817CF9C97007FE7B8 /* MyScene.m in Sources */,
 				DCEF831917CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
+				4C1A3656189F2B68005BBDFF /* GameCenterManager.m in Sources */,
 				DCD7EC4D178C573500BBAFB0 /* ViewController.m in Sources */,
 				4C3FA7D918982D530048B9A8 /* EHMechUnit.m in Sources */,
 				EC6ACF9F18960D6700236983 /* SoloScene.m in Sources */,
@@ -662,6 +669,7 @@
 				DCD7A28C178C7526004A0467 /* ViewController.m in Sources */,
 				DC0C220717CF9C97007FE7B8 /* MyScene.m in Sources */,
 				DCEF831817CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
+				4C1A3655189F2B68005BBDFF /* GameCenterManager.m in Sources */,
 				DCD7A28D178C7526004A0467 /* main.m in Sources */,
 				4C3FA7D818982D530048B9A8 /* EHMechUnit.m in Sources */,
 				EC6ACF9E18960D6700236983 /* SoloScene.m in Sources */,
