@@ -84,11 +84,24 @@
     // add gesture recognizers here!
     //http://stackoverflow.com/questions/19040347/uipangesturerecognizer-in-skscene
     
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
+    pinchGesture.delegate = self;
+    //[view addGestureRecognizer:pinchGesture];
+    
     UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
     [longPressGesture setMinimumPressDuration:0.5];
     longPressGesture.numberOfTouchesRequired = 1;
     longPressGesture.delegate = self;
     [view addGestureRecognizer:longPressGesture];
+}
+
+-(void) handlePinchGesture: (UIPinchGestureRecognizer*)recognizer
+{
+    
+    NSLog(@"pinch recognizer scale: %f",recognizer.scale);
+    
+    recognizer.view.transform = CGAffineTransformScale(recognizer.view.transform, recognizer.scale, recognizer.scale);
+    recognizer.scale = 1;
 }
 
 -(void) setupGestureRecognizers

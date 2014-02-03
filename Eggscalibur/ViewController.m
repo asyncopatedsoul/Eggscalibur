@@ -28,14 +28,22 @@
 	{
 		self.gameCenterManager = [[GameCenterManager alloc] init];
 		[self.gameCenterManager setDelegate: self];
-		[self.gameCenterManager authenticateLocalUser];
+		//[self.gameCenterManager authenticateLocalUser];
     }
     
 	// create and present first scene
 	//MyScene* myScene = [MyScene sceneWithSize:self.view.bounds.size];
 	//[self.kkView presentScene:myScene];
     
+    self.kkView.backgroundColor = [UIColor redColor];
+    
+    // TODO set scene size from map size
+    float tileWidth = 50.0;
+    float sceneScale = 2.5;
+    CGSize sceneSize = CGSizeMake(568.0*sceneScale, 320.0*sceneScale);
+    
     SoloScene* myScene = [SoloScene sceneWithSize:self.view.bounds.size];
+    //SoloScene* myScene = [SoloScene sceneWithSize:sceneSize];
 	[self.kkView presentScene:myScene];
 }
 
