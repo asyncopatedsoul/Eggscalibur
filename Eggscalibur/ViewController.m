@@ -91,7 +91,7 @@
 	{
         NSLog(@"processGameCenterAuth");
 		//[self.gameCenterManager reloadHighScoresForCategory: self.currentLeaderBoard];
-        [self.gameCenterManager findMatchWithMinPlayers:2 maxPlayers:2 viewController:self delegate:self];
+        //[self.gameCenterManager findMatchWithMinPlayers:2 maxPlayers:2 viewController:self delegate:self];
 	}
 	else
 	{
