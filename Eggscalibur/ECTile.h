@@ -10,4 +10,6 @@
 
 @interface ECTile : KKSpriteNode
 
+-(id)initWithWidth:(float)width;
+
 @end

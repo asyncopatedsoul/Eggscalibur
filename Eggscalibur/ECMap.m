@@ -7,25 +7,29 @@
 //
 
 #import "ECMap.h"
+#import "ECTile.h"
 
 @implementation ECMap
 
+-(void) setup
+{
+    // load map settings
+    
+    mapWidth = 10;
+    tileWidth = 50.0;
+    mapTiles = [[NSMutableArray alloc] init];
+}
+
 -(void) render
 {
-    mapWidth = 10;
-    
-    mapRoot = [KKNode node];
-    KKSpriteNode* mapBackground = [KKSpriteNode spriteNodeWithColor:[UIColor grayColor] size:CGSizeMake(mapWidth*tileWidth, mapWidth*tileWidth)];
+    mapBackground = [KKSpriteNode spriteNodeWithColor:[UIColor grayColor] size:CGSizeMake(mapWidth*tileWidth, mapWidth*tileWidth)];
     mapBackground.position = CGPointMake(mapWidth*tileWidth/2, mapWidth*tileWidth/2);
     
-    [mapRoot addChild:mapBackground];
-    [self addChild:mapRoot];
+    [self addChild:mapBackground];
     
-    mapTiles = [[NSMutableArray alloc] init];
-    
-    //create 10x10 grid
-    for (int y=0; y<10; y++) {
-        for (int x=0; x<10; x++)
+    //create square grid
+    for (int y=0; y<mapWidth; y++) {
+        for (int x=0; x<mapWidth; x++)
         {
             [self addMapTileAtX:x andY:y];
         }
@@ -35,36 +39,10 @@
 
 -(void) addMapTileAtX:(int)x andY: (int)y
 {
+    ECTile* mapTile = [ECTile initWithWidth:tileWidth];
     
-    KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
-    
-    KKShapeNode* tileOutline = [KKShapeNode node];
-    CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
-    CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-tileWidth/2, -tileWidth/2, tileWidth, tileWidth));
-    tileOutline.path = tileOutlinePath;
-    tileOutline.lineWidth = 1.0;
-    tileOutline.fillColor = [SKColor clearColor];
-    tileOutline.strokeColor = [SKColor whiteColor];
-    tileOutline.glowWidth = 0.0;
-    tileOutline.hidden = YES;
-    tileOutline.name = @"tileOutline";
-    
-    KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
-    tileMask.name = @"tileMask";
-    tileMask.hidden = YES;
-    
-    mapTile.name = @"tile";
-    mapTile.position = [self positionAtMapX:x andY:y];
-    //mapTile.hidden = YES;
-    mapTile.userData = [[NSMutableDictionary alloc] init];
-    [mapTile.userData setValue:[NSNumber numberWithInt:0] forKey:@"ownerId"];
-    
-    [mapTile addChild:tileOutline];
-    [mapTile addChild:tileMask];
-    
-    [mapRoot addChild:mapTile];
-    
-    [mapTiles addObject:tileOutline];
+    [self addChild:mapTile];
+    [mapTiles addObject:mapTile];
 }
 
 -(void) placeObject:(KKNode*)node AtX:(int)x andY: (int)y

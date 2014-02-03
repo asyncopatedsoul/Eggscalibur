@@ -12,7 +12,8 @@
 {
     float tileWidth;
     int mapWidth;
-    KKNode* mapRoot;
+
+    KKSpriteNode* mapBackground;
     NSMutableArray* mapTiles;
 }
 

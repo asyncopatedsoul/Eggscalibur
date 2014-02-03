@@ -10,6 +10,37 @@
 
 @implementation ECTile
 
+-(id) initWithWidth:(float)width
+{
+    KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
+    
+    KKShapeNode* tileOutline = [KKShapeNode node];
+    CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
+    CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-tileWidth/2, -tileWidth/2, tileWidth, tileWidth));
+    tileOutline.path = tileOutlinePath;
+    tileOutline.lineWidth = 1.0;
+    tileOutline.fillColor = [SKColor clearColor];
+    tileOutline.strokeColor = [SKColor whiteColor];
+    tileOutline.glowWidth = 0.0;
+    tileOutline.hidden = YES;
+    tileOutline.name = @"tileOutline";
+    
+    KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
+    tileMask.name = @"tileMask";
+    tileMask.hidden = YES;
+    
+    mapTile.name = @"tile";
+    mapTile.position = [self positionAtMapX:x andY:y];
+    //mapTile.hidden = YES;
+    mapTile.userData = [[NSMutableDictionary alloc] init];
+    [mapTile.userData setValue:[NSNumber numberWithInt:0] forKey:@"ownerId"];
+    
+    [mapTile addChild:tileOutline];
+    [mapTile addChild:tileMask];
+    
+    return self;
+}
+
 -(float) setOwner:(int)ownerId ForTile:(KKSpriteNode*)tileRoot
 {
     int currentTileOwner = [[tileRoot.userData valueForKey:@"ownerId"] integerValue];
