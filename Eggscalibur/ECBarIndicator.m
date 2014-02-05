@@ -10,6 +10,28 @@
 
 @implementation ECBarIndicator
 
+-(id) init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        
+    }
+    
+    return self;
+}
 
+-(id) initWithSize:(CGSize)size Color:(UIColor*)color MaxValue:(float)maxValue
+{
+    self = [super init];
+    
+    if (self)
+    {
+        
+    }
+    
+    return self;
+}
 
 @end

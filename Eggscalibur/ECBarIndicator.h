@@ -10,4 +10,6 @@
 
 @interface ECBarIndicator : KKSpriteNode
 
+-(id) initWithSize:(CGSize)size Color:(UIColor*)color MaxValue:(float)maxValue;
+
 @end

@@ -10,4 +10,6 @@
 
 @interface ECPlayer : NSObject
 
+-(void) transferEnergyFromPlayerToUnit:(KKNode*)unit;
+
 @end

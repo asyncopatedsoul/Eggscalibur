@@ -10,4 +10,7 @@
 	#import <KoboldKitCommunity/KoboldKitCommunity.h>
 	#import <KoboldKitExternal/KoboldKitExternal.h>
 	#import <OpenGW/OpenGW.h>
+
+    #import "Constants.h"
+    #import "KKSpriteNode+Utilities.h"
 #endif

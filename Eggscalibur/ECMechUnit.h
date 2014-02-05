@@ -17,12 +17,21 @@
     NSMutableArray* rallyPointQueue;
     bool willReceiveRallyPoints;
     
+    int ownerId;
+    
+    int movementRange;
     float movementSpeed;
     float movementCost;
     
     float energyRechargeSpeed;
     float energyRechargeAmount;
     
+    KKSpriteNode* unitBody;
+    KKSpriteNode* unitBodyAura;
+    KKSpriteNode* unitTouchMask;
+    
+    KKShapeNode* facingDirection;
+
     ECBarIndicator* energyIndicator;
     float energyLevel;
     float energyMax;
