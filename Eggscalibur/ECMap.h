@@ -8,6 +8,8 @@
 
 #import "KKSpriteNode.h"
 
+@class ECMechUnit;
+
 @interface ECMap : KKSpriteNode
 {
     float tileWidth;
@@ -15,6 +17,13 @@
 
     KKSpriteNode* mapBackground;
     NSMutableArray* mapTiles;
+    
+    NSMutableArray* units;
 }
+
+@property (atomic,readonly) NSMutableArray* units;
+
+-(void) addObject:(KKNode*)node ToMapAtX:(int)x andY: (int)y;
+-(void) addUnit:(ECMechUnit*)unit ToMapAtX:(int)x andY: (int)y;
 
 @end

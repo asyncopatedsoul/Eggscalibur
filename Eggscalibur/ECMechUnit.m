@@ -8,6 +8,7 @@
 
 #import "ECMechUnit.h"
 #import "ECBarIndicator.h"
+#import "ECPlayer.h"
 
 @implementation ECMechUnit
 
@@ -23,29 +24,22 @@
     return self;
 }
 
--(id) initWithOwner:(ECPlayer*)player OnMap:(ECMap*)mapRoot
+-(id) initWithProperties:(NSArray*)properties Owner:(ECPlayer*)player OnMap:(ECMap*)_map
 {
     self = [super init];
     
     if (self)
     {
         owner = player;
-        map = mapRoot;
+        map = _map;
+        
+        [self setup];
     }
     
     return self;
 }
 
 -(void) setup
-{
-    // energy bar
-    // health bar
-    
-    // link player
-    // link map
-}
-
--(void) setupUnits
 {
     float unitWidth = 40.0;
 
@@ -109,6 +103,20 @@
     [self addChild:unitTouchMask];
     
     //[self addObject:(KKNode*)selectedUnit ToMapAtX:1 andY:5];
+}
+
+-(bool) checkIfIntersectsWithNode:(SKNode*)node
+{
+    if ([node intersectsNode:[self childNodeWithName:@"unitTouchMask"]])
+    {
+        NSLog(@"player %i unit touched",owner.userId);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+    
 }
 
 -(void) executeRallyPointQueue
@@ -348,8 +356,8 @@
 
 -(void) updateEnergyIndicatorAtSpeed: (float)speed
 {
-    SKAction *resizeIndicator = [SKAction resizeToWidth:indicatorBarWidth*(energyLevel/energyMax) duration:0.1];
-    [energyIndicator runAction:resizeIndicator];
+    //SKAction *resizeIndicator = [SKAction resizeToWidth:indicatorBarWidth*(energyLevel/energyMax) duration:0.1];
+    //[energyIndicator runAction:resizeIndicator];
 }
 
 -(void) beginChargingUnit:(KKNode*)unit

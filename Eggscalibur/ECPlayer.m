@@ -10,7 +10,36 @@
 
 @implementation ECPlayer
 
+@synthesize userName, userId, deck;
 
+-(id) init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        
+    }
+    
+    return self;
+}
+
+-(id) initWithName:(NSString*)_name Id:(int)_id Deck:(NSArray*)_deck
+{
+    self = [super init];
+    
+    if (self)
+    {
+        userName = _name;
+        userId = _id;
+        deck = [[NSMutableArray alloc] initWithArray:_deck];
+        squad = [[NSMutableArray alloc] init];
+
+    }
+    
+    return self;
+}
+/*
 -(bool) addEnergy:(float)energyAmount ToPlayer:(int)playerId
 {
     if (playerId == 1)
@@ -71,5 +100,5 @@
         canSetRallyPoints = YES;
     }
 }
-
+*/
 @end

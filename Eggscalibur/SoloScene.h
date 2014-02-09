@@ -9,5 +9,7 @@
 #import "KKScene.h"
 
 @interface SoloScene : KKScene <UIGestureRecognizerDelegate>
-
+{
+    NSMutableArray* players;
+}
 @end

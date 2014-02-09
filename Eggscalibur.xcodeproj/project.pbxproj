@@ -23,12 +23,18 @@
 		4C1A366E189F5254005BBDFF /* ECPlayerHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A366C189F5254005BBDFF /* ECPlayerHUD.m */; };
 		4C1A3671189F6258005BBDFF /* ECPickupItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A3670189F6258005BBDFF /* ECPickupItem.m */; };
 		4C1A3672189F6258005BBDFF /* ECPickupItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A3670189F6258005BBDFF /* ECPickupItem.m */; };
-		4C3F5FB618A24B96004A59EC /* Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F5FB518A24B96004A59EC /* Utilities.c */; };
-		4C3F5FB718A24B96004A59EC /* Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F5FB518A24B96004A59EC /* Utilities.c */; };
+		4C39FDE918A59D820092170A /* Sparks.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C39FDE718A59D820092170A /* Sparks.sks */; };
+		4C39FDEA18A59D820092170A /* Sparks.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C39FDE718A59D820092170A /* Sparks.sks */; };
+		4C39FDEB18A59D820092170A /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C39FDE818A59D820092170A /* spark.png */; };
+		4C39FDEC18A59D820092170A /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C39FDE818A59D820092170A /* spark.png */; };
+		4C39FDEF18A6D2520092170A /* ECFactoryUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C39FDEE18A6D2520092170A /* ECFactoryUnit.m */; };
+		4C39FDF018A6D2520092170A /* ECFactoryUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C39FDEE18A6D2520092170A /* ECFactoryUnit.m */; };
 		4C3F5FBA18A24CD8004A59EC /* KKSpriteNode+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F5FB918A24CD8004A59EC /* KKSpriteNode+Utilities.m */; };
 		4C3F5FBB18A24CD8004A59EC /* KKSpriteNode+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F5FB918A24CD8004A59EC /* KKSpriteNode+Utilities.m */; };
 		4C3FA7D818982D530048B9A8 /* ECMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* ECMechUnit.m */; };
 		4C3FA7D918982D530048B9A8 /* ECMechUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3FA7D718982D530048B9A8 /* ECMechUnit.m */; };
+		4C63A67718A7220000B5694F /* Tile.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C63A67618A7220000B5694F /* Tile.png */; };
+		4C63A67818A7220000B5694F /* Tile.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C63A67618A7220000B5694F /* Tile.png */; };
 		DC042A83178C5A06009FDBF8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */; };
 		DC042A84178C5A12009FDBF8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95BA771786DF8600E31DA6 /* SystemConfiguration.framework */; };
 		DC09DB8E178C84C6000E0B61 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DC09DB8D178C84C6000E0B61 /* MainMenu.xib */; };
@@ -157,12 +163,16 @@
 		4C1A366C189F5254005BBDFF /* ECPlayerHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ECPlayerHUD.m; sourceTree = "<group>"; };
 		4C1A366F189F6258005BBDFF /* ECPickupItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECPickupItem.h; sourceTree = "<group>"; };
 		4C1A3670189F6258005BBDFF /* ECPickupItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ECPickupItem.m; sourceTree = "<group>"; };
+		4C39FDE718A59D820092170A /* Sparks.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Sparks.sks; sourceTree = "<group>"; };
+		4C39FDE818A59D820092170A /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
+		4C39FDED18A6D2520092170A /* ECFactoryUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECFactoryUnit.h; sourceTree = "<group>"; };
+		4C39FDEE18A6D2520092170A /* ECFactoryUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ECFactoryUnit.m; sourceTree = "<group>"; };
 		4C3F5FB418A249D3004A59EC /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Constants.h; path = ../Constants.h; sourceTree = "<group>"; };
-		4C3F5FB518A24B96004A59EC /* Utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Utilities.c; sourceTree = "<group>"; };
 		4C3F5FB818A24CD8004A59EC /* KKSpriteNode+Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "KKSpriteNode+Utilities.h"; sourceTree = "<group>"; };
 		4C3F5FB918A24CD8004A59EC /* KKSpriteNode+Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "KKSpriteNode+Utilities.m"; sourceTree = "<group>"; };
 		4C3FA7D618982D530048B9A8 /* ECMechUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECMechUnit.h; sourceTree = "<group>"; };
 		4C3FA7D718982D530048B9A8 /* ECMechUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ECMechUnit.m; sourceTree = "<group>"; };
+		4C63A67618A7220000B5694F /* Tile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tile.png; sourceTree = "<group>"; };
 		DC042A82178C5A06009FDBF8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		DC09DB8D178C84C6000E0B61 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		DC0C220517CF9C97007FE7B8 /* MyScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyScene.h; sourceTree = "<group>"; };
@@ -407,6 +417,7 @@
 		DCCC6198178C5574009EC802 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4C63A67618A7220000B5694F /* Tile.png */,
 				DCEF830C17CFDAAB00157387 /* ATTRIBUTIONS */,
 				DCEF830F17CFDBF300157387 /* die.wav */,
 				DC0C220917CFA1EF007FE7B8 /* Spaceship.png */,
@@ -421,24 +432,27 @@
 				4C1A3653189F2B68005BBDFF /* GameCenterManager.h */,
 				4C1A3654189F2B68005BBDFF /* GameCenterManager.m */,
 				DCD7EC42178C573500BBAFB0 /* AppDelegate.h */,
+				DCD7EC43178C573500BBAFB0 /* AppDelegate.m */,
 				4C1A3657189F4D67005BBDFF /* ECPlayer.h */,
 				4C1A3658189F4D67005BBDFF /* ECPlayer.m */,
 				4C1A365B189F4D8F005BBDFF /* ECTile.h */,
 				4C1A365C189F4D8F005BBDFF /* ECTile.m */,
 				4C1A365F189F4DBE005BBDFF /* ECMap.h */,
 				4C1A3660189F4DBE005BBDFF /* ECMap.m */,
-				4C3F5FB518A24B96004A59EC /* Utilities.c */,
 				4C1A3663189F4E22005BBDFF /* ECBarIndicator.h */,
 				4C1A3664189F4E22005BBDFF /* ECBarIndicator.m */,
 				4C3FA7D618982D530048B9A8 /* ECMechUnit.h */,
 				4C3FA7D718982D530048B9A8 /* ECMechUnit.m */,
-				DCD7EC43178C573500BBAFB0 /* AppDelegate.m */,
+				4C39FDE718A59D820092170A /* Sparks.sks */,
+				4C39FDE818A59D820092170A /* spark.png */,
 				DCD7EC48178C573500BBAFB0 /* ViewController.h */,
 				DCD7EC49178C573500BBAFB0 /* ViewController.m */,
 				DC0C220517CF9C97007FE7B8 /* MyScene.h */,
 				DC0C220617CF9C97007FE7B8 /* MyScene.m */,
 				EC6ACF9C18960D6700236983 /* SoloScene.h */,
 				EC6ACF9D18960D6700236983 /* SoloScene.m */,
+				4C39FDED18A6D2520092170A /* ECFactoryUnit.h */,
+				4C39FDEE18A6D2520092170A /* ECFactoryUnit.m */,
 				4C1A366F189F6258005BBDFF /* ECPickupItem.h */,
 				4C1A3670189F6258005BBDFF /* ECPickupItem.m */,
 				4C1A366B189F5254005BBDFF /* ECPlayerHUD.h */,
@@ -653,13 +667,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C39FDEC18A59D820092170A /* spark.png in Resources */,
 				DC0C220B17CFA1EF007FE7B8 /* Spaceship.png in Resources */,
 				DC5BCDBA17CF88F300A5CB01 /* Icons-Mac.iconset in Resources */,
 				DCEF831117CFDBF300157387 /* die.wav in Resources */,
+				4C39FDEA18A59D820092170A /* Sparks.sks in Resources */,
 				DCD11E3E178C522300FBC406 /* InfoPlist.strings in Resources */,
 				DCEF830E17CFDAAB00157387 /* ATTRIBUTIONS in Resources */,
 				DCD11E44178C522300FBC406 /* Credits.rtf in Resources */,
 				DC09DB8E178C84C6000E0B61 /* MainMenu.xib in Resources */,
+				4C63A67818A7220000B5694F /* Tile.png in Resources */,
 				DC18B0D5178C7BC400641A6D /* config.lua in Resources */,
 				DC9F5AC317E9C985000B593D /* devconfig.lua in Resources */,
 			);
@@ -684,9 +701,12 @@
 				DCEF830D17CFDAAB00157387 /* ATTRIBUTIONS in Resources */,
 				DCEF831017CFDBF300157387 /* die.wav in Resources */,
 				DCEF82D117CFD35B00157387 /* Icon-Small.png in Resources */,
+				4C39FDE918A59D820092170A /* Sparks.sks in Resources */,
 				DC5BCDB417CF88E500A5CB01 /* Default-568h@2x.png in Resources */,
+				4C63A67718A7220000B5694F /* Tile.png in Resources */,
 				DC5BCDAF17CF88E500A5CB01 /* Icon@2x~ipad.png in Resources */,
 				DCEF82D217CFD35B00157387 /* Icon-Small@2x.png in Resources */,
+				4C39FDEB18A59D820092170A /* spark.png in Resources */,
 				DC18B0D4178C7BC400641A6D /* config.lua in Resources */,
 				DCEF82D517CFD4AC00157387 /* Icon-Small-50.png in Resources */,
 				DC5BCDB017CF88E500A5CB01 /* Icon@2x.png in Resources */,
@@ -709,11 +729,11 @@
 				4C1A366A189F5016005BBDFF /* ECProjectile.m in Sources */,
 				DC0C220817CF9C97007FE7B8 /* MyScene.m in Sources */,
 				4C3F5FBB18A24CD8004A59EC /* KKSpriteNode+Utilities.m in Sources */,
+				4C39FDF018A6D2520092170A /* ECFactoryUnit.m in Sources */,
 				DCEF831917CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
 				4C1A3656189F2B68005BBDFF /* GameCenterManager.m in Sources */,
 				4C1A365A189F4D67005BBDFF /* ECPlayer.m in Sources */,
 				DCD7EC4D178C573500BBAFB0 /* ViewController.m in Sources */,
-				4C3F5FB718A24B96004A59EC /* Utilities.c in Sources */,
 				4C1A365E189F4D8F005BBDFF /* ECTile.m in Sources */,
 				4C3FA7D918982D530048B9A8 /* ECMechUnit.m in Sources */,
 				4C1A366E189F5254005BBDFF /* ECPlayerHUD.m in Sources */,
@@ -733,11 +753,11 @@
 				4C1A3669189F5016005BBDFF /* ECProjectile.m in Sources */,
 				DC0C220717CF9C97007FE7B8 /* MyScene.m in Sources */,
 				4C3F5FBA18A24CD8004A59EC /* KKSpriteNode+Utilities.m in Sources */,
+				4C39FDEF18A6D2520092170A /* ECFactoryUnit.m in Sources */,
 				DCEF831817CFDE9500157387 /* RemoveSpaceshipBehavior.m in Sources */,
 				4C1A3655189F2B68005BBDFF /* GameCenterManager.m in Sources */,
 				4C1A3659189F4D67005BBDFF /* ECPlayer.m in Sources */,
 				DCD7A28D178C7526004A0467 /* main.m in Sources */,
-				4C3F5FB618A24B96004A59EC /* Utilities.c in Sources */,
 				4C1A365D189F4D8F005BBDFF /* ECTile.m in Sources */,
 				4C3FA7D818982D530048B9A8 /* ECMechUnit.m in Sources */,
 				4C1A366D189F5254005BBDFF /* ECPlayerHUD.m in Sources */,

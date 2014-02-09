@@ -14,6 +14,7 @@
 #define kFilterSort @"sort"
 
 //Dimensions and Scaling
+#define kMapWidth 10
 #define kTileWidth 50.0
 #define kUnitIndicatorBarWidth 40.0
 #define kUnitIndicatorBarHeight 5.0

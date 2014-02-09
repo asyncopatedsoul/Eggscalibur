@@ -9,8 +9,11 @@
 #import "ECPlayerHUD.h"
 
 @implementation ECPlayerHUD
+{
+    
+}
 
--(void) setupPlayerHUD
+-(void) setupPVPHUD
 {
     /*
      KKNode* playerHUDRoot;
@@ -19,6 +22,7 @@
      float playerEnergyMax;
      float playerEnergyLevel;
      */
+    /*
     playerEnergyLevelMaxSize = 100.0;
     playerEnergyMax = 1000.0;
     playerEnergyLevel = 0.0;
@@ -38,6 +42,7 @@
     [playerHUDRoot addChild:playerEnergyCount];
     
     [self addChild:playerHUDRoot];
+     */
 }
 
 @end

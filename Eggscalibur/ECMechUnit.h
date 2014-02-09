@@ -46,4 +46,7 @@
     // need reference to own player singleton
 }
 
+-(id) initWithProperties:(NSArray*)properties Owner:(ECPlayer*)player OnMap:(ECMap*)_map;
+-(bool) checkIfIntersectsWithNode:(SKNode*)node;
+
 @end

@@ -10,34 +10,40 @@
 
 @implementation ECTile
 
--(id) initWithWidth:(float)width
+-(id) initWithWidth:(float)width AtX:(int)x andY:(int)y
 {
-    KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
+    NSLog(@"ECTile initWithWidthAtXandY");
+    self = [super init];
     
-    KKShapeNode* tileOutline = [KKShapeNode node];
-    CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
-    CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-tileWidth/2, -tileWidth/2, tileWidth, tileWidth));
-    tileOutline.path = tileOutlinePath;
-    tileOutline.lineWidth = 1.0;
-    tileOutline.fillColor = [SKColor clearColor];
-    tileOutline.strokeColor = [SKColor whiteColor];
-    tileOutline.glowWidth = 0.0;
-    tileOutline.hidden = YES;
-    tileOutline.name = @"tileOutline";
-    
-    KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(tileWidth, tileWidth)];
-    tileMask.name = @"tileMask";
-    tileMask.hidden = YES;
-    
-    mapTile.name = @"tile";
-    mapTile.position = [self positionAtMapX:x andY:y];
-    //mapTile.hidden = YES;
-    mapTile.userData = [[NSMutableDictionary alloc] init];
-    [mapTile.userData setValue:[NSNumber numberWithInt:0] forKey:@"ownerId"];
-    
-    [mapTile addChild:tileOutline];
-    [mapTile addChild:tileMask];
-    
+    if (self)
+    {
+        KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithImageNamed:@"Tile.png"];
+        
+        KKShapeNode* tileOutline = [KKShapeNode node];
+        CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
+        CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-kTileWidth/2, -kTileWidth/2, kTileWidth, kTileWidth));
+        tileOutline.path = tileOutlinePath;
+        tileOutline.lineWidth = 0.5;
+        tileOutline.fillColor = [SKColor clearColor];
+        tileOutline.strokeColor = [SKColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.5];
+        tileOutline.glowWidth = 0.0;
+        tileOutline.hidden = YES;
+        tileOutline.name = @"tileOutline";
+        
+        KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(kTileWidth, kTileWidth)];
+        tileMask.name = @"tileMask";
+        tileMask.hidden = YES;
+        
+        self.name = @"tile";
+        self.position = [self positionAtMapX:x andY:y];
+        //mapTile.hidden = YES;
+        
+        ownerId = 0;
+        
+        [self addChild:mapTile];
+        [self addChild:tileOutline];
+        [self addChild:tileMask];
+    }
     return self;
 }
 

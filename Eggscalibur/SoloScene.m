@@ -8,10 +8,14 @@
 
 #import "SoloScene.h"
 #import "ECMap.h"
+#import "ECPlayer.h"
+#import "ECMechUnit.h"
+#import "ECFactoryUnit.h"
 
 @implementation SoloScene
 {
-    
+    // map
+    ECMap* map;
     
     // camera movement
     KKNode* cameraRoot;
@@ -74,25 +78,74 @@
         tileWidth = 50.0;
         canSetRallyPoints = NO;
         
-        // setup player
+        // unit template
+        NSDictionary* factoryUnit = @{ @"type" : @1 };
+        NSDictionary* battleUnit = @{ @"type" : @2 };
+        // a deck must have at least 1 factory unit and 1 battle unit
+        NSArray* deck = [[NSArray alloc] initWithObjects:factoryUnit, battleUnit, nil];
         
+        
+        // setup map
+        map = [[ECMap alloc] init];
+        [self addChild:map];
+        
+        // setup players
+        ECPlayer* player1 = [[ECPlayer alloc] initWithName:@"Mike" Id:1 Deck:deck];
+        ECPlayer* player2 = [[ECPlayer alloc] initWithName:@"Karlo" Id:2 Deck:deck];
+        
+        players = [[NSMutableArray alloc] init];
+        [players addObject:player1];
+        [players addObject:player2];
         
         // setup HUD
         
         
-        // setup map
-        
-        
         // setup units
-        
+        [self setupUnits];
         
         // setup camera
         
-        [self renderMap];
-		[self setupPlayerHUD];
+        //[self renderMap];
+		//[self setupPlayerHUD];
         [self setupCamera];
 	}
 	return self;
+}
+
+-(void) setupUnits
+{
+    // TODO get start locations from map properties
+    NSArray* factoryStartLocations = [[NSArray alloc] initWithObjects:@{ @"x": @0, @"y":@0}, @{ @"x": @9, @"y":@9}, nil];
+    
+    // loop through players
+    [players enumerateObjectsUsingBlock:^(id _player, NSUInteger idx, BOOL *stop) {
+        
+        ECPlayer* player = (ECPlayer*)_player;
+        
+        // take factory unit from deck and create it
+        ECMechUnit* factoryUnit = [[ECMechUnit alloc] initWithProperties:[player.deck objectAtIndex:0] Owner:player OnMap:map];
+        
+        id startLocation = [factoryStartLocations objectAtIndex:idx];
+        
+        [map addUnit:factoryUnit ToMapAtX:[[startLocation objectForKey:@"x"] intValue] andY:[[startLocation objectForKey:@"y"] intValue]];
+        
+    }];
+    
+}
+
+-(void) setupHUD
+{
+    for (id _player in players)
+    {
+        ECPlayer* player = (ECPlayer*)_player;
+        
+        // loop through player's units
+        for (id _unit in player.deck)
+        {
+            
+        }
+    }
+    
 }
 
 - (void)didMoveToView:(SKView *)view
@@ -107,6 +160,10 @@
     longPressGesture.numberOfTouchesRequired = 1;
     longPressGesture.delegate = self;
     [view addGestureRecognizer:longPressGesture];
+    
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
+    pinchGesture.delegate = self;
+    //[view addGestureRecognizer:pinchGesture];
 }
 
 -(void) update:(CFTimeInterval)currentTime
@@ -121,7 +178,7 @@
             if ([node childNodeWithName:@"tileMask"].hidden == NO)
             {
                 NSLog(@"unit moved over tile");
-                [self unitCapturedTile:(KKNode*)node];
+                //[self unitCapturedTile:(KKNode*)node];
             }
         }
 	}];
@@ -141,6 +198,14 @@
         
         NSLog(@"single touch began: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
         
+        // check if player owns that unit
+        [map.units enumerateObjectsUsingBlock:^(id object, NSUInteger idx, BOOL *stop) {
+            ECMechUnit* unit = (ECMechUnit*) object;
+            [unit checkIfIntersectsWithNode:n];
+        }];
+        
+        
+        /*
         if ([n intersectsNode:[selectedUnit childNodeWithName:@"unitMask"]])
         {
             NSLog(@"touched unit");
@@ -160,6 +225,7 @@
         {
             willSetRallyPoints = NO;
         }
+         */
     }
     else if ([touches count]==2)
     {
@@ -180,8 +246,13 @@
     
     if ([touches count]==1)
     {
-        CGPoint location = [touch locationInNode:mapRoot];
+        CGPoint location = [touch locationInNode:map];
         NSLog(@"single touch moved: %f, %f",location.x, location.y);
+        
+        
+        
+        /*
+        
         
         SKNode *n = [self nodeAtPoint:[touch locationInNode:self]];
         if (n != self && [n.name isEqual: @"tileMask"]) {
@@ -209,6 +280,7 @@
             }
             
         }
+         */
     }
     else if ([touches count]==2)
     {
@@ -250,10 +322,10 @@
         
         if (willSetRallyPoints)
         {
-            CGPoint location = [touch locationInNode:mapRoot];
+            CGPoint location = [touch locationInNode:map];
             NSLog(@"touch moved: %f, %f",location.x, location.y);
             
-            [self executeRallyPointQueue];
+            //[self executeRallyPointQueue];
             willSetRallyPoints = NO;
         }
         
@@ -276,7 +348,7 @@
         if (n != self && [n.name isEqual: @"unitMask"]) {
         
             NSLog(@"long press on unit");
-            [self beginChargingUnit:selectedUnit];
+            //[self beginChargingUnit:selectedUnit];
         }
     }
     if (recognizer.state == UIGestureRecognizerStateChanged)
@@ -287,8 +359,29 @@
     if (recognizer.state == UIGestureRecognizerStateEnded)
     {
         NSLog(@"long press ended");
-        [self finishChargingUnit:selectedUnit];
+        //[self finishChargingUnit:selectedUnit];
     }
+}
+
+- (void) handlePinchGesture:(UIPinchGestureRecognizer *)recognizer {
+    
+    NSLog(@"handlePinchGesture: %f",recognizer.scale);
+    
+    //recognizer.view.transform = CGAffineTransformScale(recognizer.view.transform, recognizer.scale, recognizer.scale);
+    
+    if (recognizer.scale>1)
+    {
+        map.xScale = 1.0;
+        map.yScale = 1.0;
+    }
+    else if (recognizer.scale<1)
+    {
+        map.xScale = 0.5;
+        map.yScale = 0.5;
+    }
+    
+    //recognizer.scale = 1;
+    
 }
 
 #pragma mark camera movement
@@ -298,7 +391,15 @@
     touchOrigin = CGPointZero;
     cameraRoot = [KKNode node];
     cameraRoot.position = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
-    [mapRoot addChild:cameraRoot];
+    
+    playerHUDRoot = [KKNode node];
+    KKSpriteNode* testUI = [KKSpriteNode spriteNodeWithColor:[UIColor redColor] size:CGSizeMake(80, 320.0)];
+    testUI.position = CGPointMake(40.,160.0);
+    [playerHUDRoot addChild:testUI];
+    //[self addChild:playerHUDRoot];
+    
+    [map addChild:cameraRoot];
+    
 }
 
 - (void)didSimulatePhysics

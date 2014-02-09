@@ -9,7 +9,10 @@
 #import "KKSpriteNode.h"
 
 @interface ECTile : KKSpriteNode
+{
+    int ownerId;
+}
 
--(id)initWithWidth:(float)width;
+-(id)initWithWidth:(float)width AtX:(int)x andY:(int)y;
 
 @end
