@@ -46,7 +46,14 @@
     // need reference to own player singleton
 }
 
+@property (atomic,readonly) ECPlayer* owner;
+@property (atomic, retain) KKSpriteNode* unitTouchMask;
+@property (nonatomic,assign) bool willReceiveRallyPoints;
+
 -(id) initWithProperties:(NSArray*)properties Owner:(ECPlayer*)player OnMap:(ECMap*)_map;
--(bool) checkIfIntersectsWithNode:(SKNode*)node;
+-(bool) checkIfIntersectsWithNode:(SKNode*)node ByPlayer:(int)gameId;
+-(bool) validateRallyPoint:(CGPoint)newRallyPoint;
+-(bool) addRallyPoint:(CGPoint)rallyPoint;
+-(void) executeRallyPointQueue;
 
 @end

@@ -11,6 +11,8 @@
 #import "ECPlayer.h"
 #import "ECMechUnit.h"
 #import "ECFactoryUnit.h"
+#import "ECTile.h"
+#import "ECPlayerHUD.h"
 
 @implementation SoloScene
 {
@@ -24,13 +26,19 @@
     
     bool willSetRallyPoints;
     
+    int currentPlayerGameId;
+    
+    // rally point management
+    ECMechUnit* selectedUnit;
+    
+    KKNode* HUDRoot;
+    /*
     float tileWidth;
     int mapWidth;
     KKNode* mapRoot;
     NSMutableArray* mapTiles;
     
-    // rally point management
-    KKNode* selectedUnit;
+    
     KKSpriteNode* selectedUnitBody;
     KKNode* touchIndicatorRoot;
    
@@ -38,7 +46,7 @@
     
     
     // player energy
-    KKNode* playerHUDRoot;
+   
     KKSpriteNode* playerEnergyLevelIndicator;
     KKLabelNode* playerEnergyCount;
     float playerEnergyLevelMaxSize;
@@ -62,6 +70,7 @@
     float batteryEnergyMax;
     float batteryEnergyLevel;
     KKSpriteNode* batteryLevelIndicator;
+     */
 }
 
 -(id) initWithSize:(CGSize)size
@@ -69,14 +78,12 @@
 	self = [super initWithSize:size];
 	if (self)
 	{
-		/* Setup your scene here */
 		self.backgroundColor = [SKColor blackColor];
         
         self.physicsWorld.gravity = CGVectorMake(0.0, 0.0);
         self.physicsWorld.contactDelegate = self;
         
-        tileWidth = 50.0;
-        canSetRallyPoints = NO;
+        willSetRallyPoints = NO;
         
         // unit template
         NSDictionary* factoryUnit = @{ @"type" : @1 };
@@ -90,24 +97,27 @@
         [self addChild:map];
         
         // setup players
-        ECPlayer* player1 = [[ECPlayer alloc] initWithName:@"Mike" Id:1 Deck:deck];
-        ECPlayer* player2 = [[ECPlayer alloc] initWithName:@"Karlo" Id:2 Deck:deck];
+        ECPlayer* player1 = [[ECPlayer alloc] initWithName:@"Mike" Id:0 Deck:deck];
+        ECPlayer* player2 = [[ECPlayer alloc] initWithName:@"Karlo" Id:1 Deck:deck];
         
         players = [[NSMutableArray alloc] init];
         [players addObject:player1];
         [players addObject:player2];
         
-        // setup HUD
         
+		// TODO which player is this?
+        // maps to unit.gameId
+        currentPlayerGameId = 0;
+
         
         // setup units
         [self setupUnits];
         
         // setup camera
-        
-        //[self renderMap];
-		//[self setupPlayerHUD];
         [self setupCamera];
+        
+        // setup HUD
+        [self setupHUD];
 	}
 	return self;
 }
@@ -135,6 +145,9 @@
 
 -(void) setupHUD
 {
+    ECPlayerHUD* HUD = [[ECPlayerHUD alloc] init];
+    [self addChild:HUD];
+    
     for (id _player in players)
     {
         ECPlayer* player = (ECPlayer*)_player;
@@ -145,7 +158,6 @@
             
         }
     }
-    
 }
 
 - (void)didMoveToView:(SKView *)view
@@ -171,15 +183,12 @@
 	/* Called before each frame is rendered */
     
     //hide tile outlines as unit moves over them
-    [mapRoot enumerateChildNodesWithName:@"tile" usingBlock:^(SKNode *node, BOOL *stop)
+    [map enumerateChildNodesWithName:@"tile" usingBlock:^(SKNode *node, BOOL *stop)
     {
         if ([selectedUnit intersectsNode:node])
         {
-            if ([node childNodeWithName:@"tileMask"].hidden == NO)
-            {
-                NSLog(@"unit moved over tile");
-                //[self unitCapturedTile:(KKNode*)node];
-            }
+            ECTile* tile = (ECTile*)node;
+            [tile deactivateAsRallyPointForUnit:selectedUnit];
         }
 	}];
     
@@ -198,11 +207,29 @@
         
         NSLog(@"single touch began: %f,%f",[touch locationInNode:self].x,[touch locationInNode:self].y);
         
+        if (n != self && [n.name isEqual: @"unitTouchMask"]) {
+            ECMechUnit* unit = (ECMechUnit*) n.parent;
+            if ([unit checkIfIntersectsWithNode:n ByPlayer:currentPlayerGameId])
+            {
+                NSLog(@"player unit selected");
+                selectedUnit = unit;
+                unit.willReceiveRallyPoints = YES;
+                //willSetRallyPoints = YES;
+            }
+        }
+        
         // check if player owns that unit
+        /*
         [map.units enumerateObjectsUsingBlock:^(id object, NSUInteger idx, BOOL *stop) {
             ECMechUnit* unit = (ECMechUnit*) object;
-            [unit checkIfIntersectsWithNode:n];
+            if ([unit checkIfIntersectsWithNode:n ByPlayer:currentPlayerGameId])
+            {
+                NSLog(@"player unit selected");
+                selectedUnit = unit;
+                willSetRallyPoints = YES;
+            }
         }];
+         */
         
         
         /*
@@ -238,6 +265,7 @@
 }
 
 
+
 -(void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     //for (UITouch* touch in touches){}
@@ -250,6 +278,27 @@
         NSLog(@"single touch moved: %f, %f",location.x, location.y);
         
         
+        SKNode *n = [self nodeAtPoint:[touch locationInNode:map]];
+        
+        //NSLog(@"node name touched: %@", n.name);
+        
+        NSArray* nodesAtTouch = [[NSArray alloc] initWithArray:[map nodesAtPoint:[touch locationInNode:map]]];
+        NSLog(@"map nodes at touch point: %@",nodesAtTouch);
+        
+        //[nodesAtTouch containsObject:selectedUnit];
+        
+        ECTile* tile = [map getTileAtLocation:[touch locationInNode:map]];
+        
+        if (![nodesAtTouch containsObject:selectedUnit.unitTouchMask] && [nodesAtTouch containsObject:tile]) {
+        
+        //if (n != self && [n.name isEqual: @"tileMask"]) {
+            NSLog(@"touched tile");
+            
+            if (selectedUnit.willReceiveRallyPoints && [selectedUnit validateRallyPoint:tile.position])
+            {
+                [tile activateAsRallyPointForUnit:selectedUnit];
+            }
+        }
         
         /*
         
@@ -320,13 +369,12 @@
     for (UITouch* touch in touches)
 	{
         
-        if (willSetRallyPoints)
+        if (selectedUnit.willReceiveRallyPoints)
         {
             CGPoint location = [touch locationInNode:map];
-            NSLog(@"touch moved: %f, %f",location.x, location.y);
+            NSLog(@"touch ended: %f, %f",location.x, location.y);
             
-            //[self executeRallyPointQueue];
-            willSetRallyPoints = NO;
+            [selectedUnit executeRallyPointQueue];
         }
         
     }
@@ -392,14 +440,16 @@
     cameraRoot = [KKNode node];
     cameraRoot.position = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
     
-    playerHUDRoot = [KKNode node];
-    KKSpriteNode* testUI = [KKSpriteNode spriteNodeWithColor:[UIColor redColor] size:CGSizeMake(80, 320.0)];
-    testUI.position = CGPointMake(40.,160.0);
-    [playerHUDRoot addChild:testUI];
-    //[self addChild:playerHUDRoot];
+    if (currentPlayerGameId==0)
+    {
+        // position camera in bottom left
+        cameraRoot.position = CGPointMake(-80.0,0.0);
+    }
     
+
     [map addChild:cameraRoot];
     
+    // TODO set camera on factory starting position
 }
 
 - (void)didSimulatePhysics

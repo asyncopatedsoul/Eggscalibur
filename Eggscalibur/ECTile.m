@@ -7,8 +7,20 @@
 //
 
 #import "ECTile.h"
+#import "ECMechUnit.h"
 
 @implementation ECTile
+{
+    KKSpriteNode* tileHighlight;
+    KKShapeNode* tileOutline;
+    KKSpriteNode* mapTile;
+    KKSpriteNode* tileMask;
+    
+    KKSpriteNode* tileStateRoot;
+    KKSpriteNode* tileStateIcon;
+    
+    KKShapeNode* actionDirection;
+}
 
 -(id) initWithWidth:(float)width AtX:(int)x andY:(int)y
 {
@@ -17,9 +29,15 @@
     
     if (self)
     {
-        KKSpriteNode* mapTile = [KKSpriteNode spriteNodeWithImageNamed:@"Tile.png"];
         
-        KKShapeNode* tileOutline = [KKShapeNode node];
+        
+        mappedUnits = [[NSMutableArray alloc] init];
+        mapTile = [KKSpriteNode spriteNodeWithImageNamed:@"Tile.png"];
+        
+        tileHighlight = [KKSpriteNode spriteNodeWithImageNamed:@"BlueTileHighlight.png"];
+        tileHighlight.hidden = YES;
+        
+        tileOutline = [KKShapeNode node];
         CGMutablePathRef tileOutlinePath = CGPathCreateMutable();
         CGPathAddRect(tileOutlinePath, NULL, CGRectMake(-kTileWidth/2, -kTileWidth/2, kTileWidth, kTileWidth));
         tileOutline.path = tileOutlinePath;
@@ -30,7 +48,24 @@
         tileOutline.hidden = YES;
         tileOutline.name = @"tileOutline";
         
-        KKSpriteNode* tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(kTileWidth, kTileWidth)];
+        //tileStateRoot = [KKSpriteNode node];
+        tileStateRoot = [KKSpriteNode spriteNodeWithImageNamed:@"BlueTile.png"];
+        tileStateRoot.hidden = YES;
+        tileStateIcon = [KKSpriteNode node];
+        
+        actionDirection = [KKShapeNode node];
+        actionDirection.position = CGPointMake(-10.0, -10.0);
+        CGPoint triangle[] = {CGPointMake(0.0, 0.0), CGPointMake(10.0, 20.0), CGPointMake(20.0, 0.0)};
+        CGMutablePathRef facingPointer = CGPathCreateMutable();
+        CGPathAddLines(facingPointer, NULL, triangle, 3);
+        actionDirection.path = facingPointer;
+        actionDirection.lineWidth = 1.0;
+        actionDirection.fillColor = [SKColor whiteColor];
+        actionDirection.strokeColor = [SKColor clearColor];
+        actionDirection.glowWidth = 0.0;
+        
+        
+        tileMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(kTileWidth, kTileWidth)];
         tileMask.name = @"tileMask";
         tileMask.hidden = YES;
         
@@ -41,36 +76,74 @@
         ownerId = 0;
         
         [self addChild:mapTile];
+        [self addChild:tileHighlight];
         [self addChild:tileOutline];
+        
+        [self addChild:tileStateRoot];
+        
         [self addChild:tileMask];
     }
     return self;
 }
 
--(float) setOwner:(int)ownerId ForTile:(KKSpriteNode*)tileRoot
+-(bool) activateAsRallyPointForUnit:(ECMechUnit*)unit
 {
-    int currentTileOwner = [[tileRoot.userData valueForKey:@"ownerId"] integerValue];
+    if ([mappedUnits containsObject:unit])
+    {
+        NSLog(@"rally point already added");
+        return false;
+    }
+    else
+    {
+        NSLog(@"adding rally point");
+
+        //tileOutline.hidden = NO;
+        tileHighlight.hidden = NO;
+        [mappedUnits addObject:unit];
+        [unit addRallyPoint:self.position];
+        
+        return true;
+    }
+    
+}
+
+-(void) deactivateAsRallyPointForUnit:(ECMechUnit*)unit
+{
+    if ([mappedUnits containsObject:unit])
+    {
+        [mappedUnits removeObject:unit];
+        tileHighlight.hidden = YES;
+        NSLog(@"rally point deactivated");
+        
+        [self setOwner:unit.owner.gameId];
+    }
+}
+
+-(float) setOwner:(int)newOwnerId
+{
+    NSLog(@"setting owner for tile: %i",newOwnerId);
     float energyCaptured;
     
-    if (currentTileOwner==0){
+    if (ownerId==0){
         energyCaptured = 50.0;
     }
-    else if (ownerId == currentTileOwner){
+    else if (ownerId == newOwnerId){
         energyCaptured = 10.0;
     }
     else {
         energyCaptured = 75.0;
     }
     
-    [tileRoot.userData setValue:[NSNumber numberWithInt:ownerId] forKey:@"ownerId"];
+    ownerId = newOwnerId;
     
-    if (ownerId == 1)
+    if (ownerId == 0)
     {
-        tileRoot.color = [UIColor greenColor];
+        //tileStateRoot = [KKSpriteNode spriteNodeWithImageNamed:@"BlueTile.png"];
+        tileStateRoot.hidden = NO;
     }
-    else if (ownerId == 2)
+    else if (ownerId == 1)
     {
-        tileRoot.color = [UIColor orangeColor];
+        //tileRoot.color = [UIColor orangeColor];
     }
     
     return energyCaptured;

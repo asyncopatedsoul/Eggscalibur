@@ -9,6 +9,11 @@
 #import "ECBarIndicator.h"
 
 @implementation ECBarIndicator
+{
+    KKLabelNode* levelLabel;
+    float level;
+    float maxLevel;
+}
 
 -(id) init
 {
@@ -28,10 +33,27 @@
     
     if (self)
     {
+        maxLevel = maxValue;
+        level = maxValue;
         
+        levelLabel = [KKLabelNode node];
+        [self addChild:levelLabel];
+        
+        [self updateDisplay];
     }
     
     return self;
+}
+
+-(void) updateLevelByAmount:(float)amount
+{
+    level+=amount;
+    [self updateDisplay];
+}
+
+-(void) updateDisplay
+{
+    levelLabel.text = [NSString stringWithFormat:@"%i",(int)level];
 }
 
 @end

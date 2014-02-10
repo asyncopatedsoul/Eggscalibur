@@ -12,6 +12,8 @@
 
 @implementation ECMechUnit
 
+@synthesize owner, willReceiveRallyPoints, unitTouchMask;
+
 -(id) init
 {
     self = [super init];
@@ -58,19 +60,22 @@
     
     self.name = @"unit";
     
-    unitBody = [KKSpriteNode spriteNodeWithColor:[UIColor blueColor] size:CGSizeMake(unitWidth, unitWidth)];
+    //unitBody = [KKSpriteNode spriteNodeWithColor:[UIColor blueColor] size:CGSizeMake(unitWidth, unitWidth)];
+    unitBody = [KKSpriteNode spriteNodeWithImageNamed:@"BlueCar.png"];
     unitBody.name = @"unitBody";
+    unitBody.position = CGPointMake(0.0,9.0);
     unitBody.physicsBody.dynamic = YES;
     unitBody.physicsBody.restitution = 0.2;
     unitBody.physicsBody.allowsRotation = YES;
     unitBody.physicsBody.mass = 1.0;
     
-    unitBodyAura = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(unitWidth*2, unitWidth*2)];
-    unitBodyAura.name = @"unitBodyAura";
-    unitBodyAura.hidden = YES;
+    //unitBodyAura = [KKSpriteNode spriteNodeWithColor:[UIColor yellowColor] size:CGSizeMake(unitWidth*2, unitWidth*2)];
+    //unitBodyAura.name = @"unitBodyAura";
+    //unitBodyAura.hidden = YES;
     
-    unitTouchMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(unitWidth, unitWidth)];
+    unitTouchMask = [KKSpriteNode spriteNodeWithColor:[UIColor clearColor] size:CGSizeMake(kTileWidth, kTileWidth)];
     unitTouchMask.name = @"unitTouchMask";
+    //unitTouchMask.zPosition = 99;
     
     // setup energy and health indicators
     
@@ -97,17 +102,19 @@
     // build unit
     [self addChild:energyIndicator];
     [self addChild:healthIndicator];
+    
     [self addChild:unitBody];
-    [self addChild:unitBodyAura];
     [self addChild:facingDirection];
+    //[self addChild:unitBodyAura];
     [self addChild:unitTouchMask];
     
     //[self addObject:(KKNode*)selectedUnit ToMapAtX:1 andY:5];
 }
 
--(bool) checkIfIntersectsWithNode:(SKNode*)node
+-(bool) checkIfIntersectsWithNode:(SKNode*)node ByPlayer:(int)gameId
 {
-    if ([node intersectsNode:[self childNodeWithName:@"unitTouchMask"]])
+    //if ([node intersectsNode:[self childNodeWithName:@"unitTouchMask"]] && gameId==owner.userId)
+    if (gameId==owner.userId)
     {
         NSLog(@"player %i unit touched",owner.userId);
         return true;
@@ -188,6 +195,21 @@
     }
 }
 
+-(bool) addRallyPoint:(CGPoint)rallyPoint
+{
+    [rallyPointQueue addObject:[NSValue valueWithCGPoint:rallyPoint]];
+    
+    if ([rallyPointQueue count]>=movementRange)
+    {
+        [self executeRallyPointQueue];
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 -(SKAction*) moveFromStart: (CGPoint)start ToFinish: (CGPoint)finish
 {
     int startX = [self mapXatPositionX:start.x];
@@ -208,7 +230,7 @@
     //SKAction* unitFaceHorizontalAction = [SKAction rotateByAngle:M_PI duration:1.0];
     SKAction* unitFaceHorizontalAction = [SKAction rotateToAngle:horizontalRotation duration:0.1 shortestUnitArc:YES];
     SKAction *unitFaceHorizontalChildAction = [SKAction runBlock:(dispatch_block_t)^() {
-        [unitBody runAction:unitFaceHorizontalAction];
+        [facingDirection runAction:unitFaceHorizontalAction];
     }];
     
     SKAction *unitMoveHorizontalAction = [SKAction moveToX:finish.x duration:[self moveDurationAcrossTiles:tileCountX AtSpeed:movementSpeed]];
@@ -216,7 +238,7 @@
     //SKAction* unitFaceVerticalAction = [SKAction rotateByAngle:M_PI duration:1.0];
     SKAction* unitFaceVerticalAction = [SKAction rotateToAngle:verticalRotation duration:0.1 shortestUnitArc:YES];
     SKAction *unitFaceVerticalChildAction = [SKAction runBlock:(dispatch_block_t)^() {
-        [unitBody runAction:unitFaceVerticalAction];
+        [facingDirection runAction:unitFaceVerticalAction];
     }];
     
     SKAction *unitMoveVerticalAction = [SKAction moveToY:finish.y duration:[self moveDurationAcrossTiles:tileCountY AtSpeed:movementSpeed]];
@@ -349,7 +371,8 @@
 -(float) updateUnitEnergy: (float)energyAmount AtSpeed:(float)speed
 {
     energyLevel+=energyAmount;
-    [self updateEnergyIndicatorAtSpeed:speed];
+    [energyIndicator updateLevelByAmount:energyAmount];
+    //[self updateEnergyIndicatorAtSpeed:speed];
     
     return energyLevel;
 }

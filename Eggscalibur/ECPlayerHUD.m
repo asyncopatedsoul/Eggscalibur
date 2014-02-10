@@ -7,10 +7,39 @@
 //
 
 #import "ECPlayerHUD.h"
+#import "ECMechUnit.h"
 
 @implementation ECPlayerHUD
 {
+    float widthSideDock;
+    float heightSideDock;
     
+    KKSpriteNode* background;
+    
+    ECMechUnit* selectedUnit;
+}
+
+-(id) init{
+    self = [super init];
+    
+    widthSideDock = 80.0;
+    heightSideDock = 320.0;
+    
+    if (self)
+    {
+        background = [KKSpriteNode spriteNodeWithColor:[UIColor grayColor] size:CGSizeMake(widthSideDock, heightSideDock)];
+        background.position = CGPointMake(widthSideDock/2, heightSideDock/2);
+        [self addChild:background];
+    }
+    
+    return self;
+}
+
+-(void) setSelectedUnit:(ECMechUnit*)unit
+{
+    selectedUnit = unit;
+    
+    // load and link unit properties and ablitities 
 }
 
 -(void) setupPVPHUD

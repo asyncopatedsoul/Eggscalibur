@@ -8,11 +8,16 @@
 
 #import "KKSpriteNode.h"
 
+@class ECMechUnit;
+
 @interface ECTile : KKSpriteNode
 {
     int ownerId;
+    NSMutableArray *mappedUnits;
 }
 
 -(id)initWithWidth:(float)width AtX:(int)x andY:(int)y;
+-(bool) activateAsRallyPointForUnit:(ECMechUnit*)unit;
+-(void) deactivateAsRallyPointForUnit:(ECMechUnit*)unit;
 
 @end

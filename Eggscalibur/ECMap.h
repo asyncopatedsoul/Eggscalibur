@@ -8,7 +8,7 @@
 
 #import "KKSpriteNode.h"
 
-@class ECMechUnit;
+@class ECMechUnit, ECTile;
 
 @interface ECMap : KKSpriteNode
 {
@@ -25,5 +25,6 @@
 
 -(void) addObject:(KKNode*)node ToMapAtX:(int)x andY: (int)y;
 -(void) addUnit:(ECMechUnit*)unit ToMapAtX:(int)x andY: (int)y;
+-(ECTile*) getTileAtLocation:(CGPoint)point;
 
 @end

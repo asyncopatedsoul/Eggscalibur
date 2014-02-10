@@ -79,6 +79,22 @@
     [self addChild:node];
 }
 
+-(ECTile*) getTileAtLocation:(CGPoint)point
+{
+    NSArray* nodesAtPoint = [self nodesAtPoint:point];
+    ECTile* tileAtPoint = nil;
+    
+    for (id node in nodesAtPoint)
+    {
+        KKNode* childNode = (KKNode*)node;
+        
+        if ([childNode.name isEqualToString:@"tile"])
+            tileAtPoint = (ECTile*)childNode;
+    }
+    
+    return tileAtPoint;
+}
+
 #pragma mark coordinate utilities
 
 -(CGPoint) positionAtMapX:(int)x andY: (int)y
