@@ -37,6 +37,8 @@
         level = maxValue;
         
         levelLabel = [KKLabelNode node];
+        levelLabel.fontColor = [UIColor blackColor];
+        levelLabel.fontSize = 16.0;
         [self addChild:levelLabel];
         
         [self updateDisplay];

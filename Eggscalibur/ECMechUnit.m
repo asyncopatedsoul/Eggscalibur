@@ -43,8 +43,6 @@
 
 -(void) setup
 {
-    float unitWidth = 40.0;
-
     movementRange = 5;
     willReceiveRallyPoints = YES;
     
@@ -100,12 +98,15 @@
     
     
     // build unit
-    [self addChild:energyIndicator];
-    [self addChild:healthIndicator];
+    
     
     [self addChild:unitBody];
     [self addChild:facingDirection];
     //[self addChild:unitBodyAura];
+    
+    [self addChild:energyIndicator];
+    //[self addChild:healthIndicator];
+    
     [self addChild:unitTouchMask];
     
     //[self addObject:(KKNode*)selectedUnit ToMapAtX:1 andY:5];
@@ -130,6 +131,9 @@
 {
     if ([self actionForKey:@"isMoving"] || !willReceiveRallyPoints)
         return;
+    
+    if ([self actionForKey:@"isCharging"])
+        [self finishCharging];
     
     willReceiveRallyPoints = NO;
     
@@ -156,12 +160,15 @@
         NSLog(@"All moves completed");
         [rallyPointQueue removeAllObjects];
         willReceiveRallyPoints = YES;
+        
+        [self startCharging];
     }];
     [movementSequence addObject: doneAction];
     
     SKAction *moveAlongRallyPointPath = [SKAction sequence:movementSequence];
     [self runAction:moveAlongRallyPointPath withKey:@"isMoving"];
 }
+
 
 -(bool) validateRallyPoint:(CGPoint)newRallyPoint
 {
@@ -254,6 +261,7 @@
         // check if unit has enough energy to move again
         if (energyLevel-movementCost < 0){
             [self cancelUnitMovement];
+            [self startCharging];
             [self showUnitHasInsufficientEnergy];
             willReceiveRallyPoints = NO;
         }
@@ -383,32 +391,47 @@
     //[energyIndicator runAction:resizeIndicator];
 }
 
--(void) beginChargingUnit:(KKNode*)unit
+-(void) rechargeByAmount:(float)amount
+{
+    [self updateUnitEnergy:amount AtSpeed:0.1];
+    
+    if (energyLevel>=energyMax)
+        [self finishCharging];
+}
+
+-(void) startCharging
 {
     // show unit is charging
     unitBody.color = [UIColor yellowColor];
     unitBodyAura.hidden = NO;
     
-    float unitChargeSpeed = 0.5;
+    float unitChargeSpeed = 0.1;
+    float chargeAmount = 5.0;
+    
+    //SKAction *addEnergyAction = [SKAction runBlock:(dispatch_block_t)^() {
+        //[owner transferEnergyFromPlayerToUnit:unit];
+    //}];
     
     SKAction *addEnergyAction = [SKAction runBlock:(dispatch_block_t)^() {
-        [owner transferEnergyFromPlayerToUnit:unit];
+        [self rechargeByAmount:chargeAmount];
     }];
     
-    SKAction *blink = [SKAction sequence:@[addEnergyAction,
-                                           [SKAction fadeOutWithDuration:unitChargeSpeed/2],
-                                           [SKAction fadeInWithDuration:unitChargeSpeed/2]]];
-    SKAction *blinkForever = [SKAction repeatActionForever:blink];
-    [unitBodyAura runAction:blinkForever withKey:@"unitCharging"];
+    SKAction *charge = [SKAction sequence:@[addEnergyAction,
+                                            [SKAction waitForDuration:unitChargeSpeed] ] ];
+                                           //[SKAction fadeInWithDuration:unitChargeSpeed/2]]];
+    SKAction *chargeForever = [SKAction repeatActionForever:charge];
+    [self runAction:chargeForever withKey:@"isCharging"];
+    //[unitBodyAura runAction:blinkForever withKey:@"unitCharging"];
 }
 
--(void) finishChargingUnit:(KKNode*)unit
+-(void) finishCharging
 {
-    unitBody.color = [UIColor blueColor];
+    [self removeActionForKey:@"isCharging"];
+    //unitBody.color = [UIColor blueColor];
     
-    [unitBodyAura removeActionForKey:@"unitCharging"];
-    unitBodyAura.alpha = 1.0;
-    unitBodyAura.hidden = YES;
+    //[unitBodyAura removeActionForKey:@"unitCharging"];
+    //unitBodyAura.alpha = 1.0;
+    //unitBodyAura.hidden = YES;
 }
 
 #pragma mark health

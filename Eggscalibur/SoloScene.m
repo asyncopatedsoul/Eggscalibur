@@ -13,9 +13,12 @@
 #import "ECFactoryUnit.h"
 #import "ECTile.h"
 #import "ECPlayerHUD.h"
+#import "CustomProgressView.h"
 
 @implementation SoloScene
 {
+    CustomProgressView *customProgressView;
+    
     // map
     ECMap* map;
     
@@ -176,6 +179,19 @@
     UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
     pinchGesture.delegate = self;
     //[view addGestureRecognizer:pinchGesture];
+    
+    customProgressView = [[CustomProgressView alloc] init];
+    customProgressView.delegate = self;
+    [self.view addSubview:customProgressView];
+    
+    [self performSelector:@selector(setProgress:) withObject:[NSNumber numberWithFloat:0.3] afterDelay:0.0];
+    [self performSelector:@selector(setProgress:) withObject:[NSNumber numberWithFloat:0.75] afterDelay:2.0];
+    [self performSelector:@selector(setProgress:) withObject:[NSNumber numberWithFloat:1.0] afterDelay:4.0];
+}
+
+-(void)setProgress:(NSNumber*)value
+{
+    [customProgressView performSelectorOnMainThread:@selector(setProgress:) withObject:value waitUntilDone:NO];
 }
 
 -(void) update:(CFTimeInterval)currentTime
